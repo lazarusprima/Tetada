@@ -141,7 +141,7 @@ body{
 .hero{
   position:relative;
   min-height:720px;
-  background:url("../../assets/images/homepage_tetada.jpg");
+  background:url("../../assets/homepage_tetada.jpg.jpg");
   background-size:cover;
   background-position:center;
   overflow:hidden;
@@ -239,7 +239,7 @@ body{
   content:"";
   position:absolute;
   inset:0;
-  background:url("../../assets/images/buah_susu.jpg");
+  background:url("../../assets/buah_susu.jpg");
   background-size:cover;
   background-position:center;
   opacity:.22;

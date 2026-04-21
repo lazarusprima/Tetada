@@ -1,7 +1,8 @@
 window.onload = function () {
-  initNavbar();
   updateClock();
   renderStock();
+  initButtons();
+  initMenu();
   animateTimeline();
   initIconHover();
 
@@ -9,40 +10,10 @@ window.onload = function () {
 };
 
 let currentStock = 128;
-let maxStock = 340;
-
-function initNavbar() {
-  const menuLinks = document.querySelectorAll(".menu a");
-  const emergencyBtn = document.querySelector(".emergency");
-  const adminLink = document.querySelector(".admin-link");
-
-  menuLinks.forEach((link) => {
-    link.addEventListener("click", function () {
-      menuLinks.forEach((item) => {
-        item.classList.remove("active");
-      });
-
-      this.classList.add("active");
-    });
-  });
-
-  if (emergencyBtn) {
-    emergencyBtn.addEventListener("click", function () {
-      alert("Emergency mode activated!");
-    });
-  }
-
-  if (adminLink) {
-    adminLink.addEventListener("click", function (e) {
-      e.preventDefault();
-      window.location.href = "../homepage/admin-login.html";
-    });
-  }
-}
+const maxStock = 340;
 
 function updateClock() {
   const jam = document.getElementById("jam");
-
   if (!jam) return;
 
   const now = new Date();
@@ -63,38 +34,59 @@ function renderStock() {
   stockValue.innerText = currentStock;
 
   const percent = Math.round((currentStock / maxStock) * 100);
-
   fill.style.width = percent + "%";
 }
 
-function animateTimeline() {
-  const items = document.querySelectorAll(".item");
-  const dots = document.querySelectorAll(".dot");
-  const icons = document.querySelectorAll(".icon");
+function initButtons() {
+  const emergencyBtn = document.querySelector(".emergency");
+  const adminBtn = document.querySelector(".admin-link");
 
-  const elements = [...items, ...dots, ...icons];
+  if (emergencyBtn) {
+    emergencyBtn.onclick = function () {
+      alert("Emergency mode activated!");
+    };
+  }
 
-  elements.forEach((el) => {
-    el.style.opacity = "0";
-    el.style.transform = "translateY(25px)";
-    el.style.transition = "0.6s ease";
+  if (adminBtn) {
+    adminBtn.onclick = function (e) {
+      e.preventDefault();
+      window.location.href = "../homepage/admin-login.html";
+    };
+  }
+}
+
+function initMenu() {
+  const links = document.querySelectorAll(".menu a");
+
+  links.forEach((link) => {
+    link.addEventListener("click", function () {
+      links.forEach((item) => item.classList.remove("active"));
+      this.classList.add("active");
+    });
   });
+}
+
+function animateTimeline() {
+  const elements = document.querySelectorAll(".item, .dot, .icon");
 
   const observer = new IntersectionObserver(
-    function (entries) {
+    (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           entry.target.style.opacity = "1";
           entry.target.style.transform = "translateY(0)";
+          observer.unobserve(entry.target);
         }
       });
     },
     {
-      threshold: 0.15
+      threshold: 0.18,
+      rootMargin: "0px 0px -50px 0px"
     }
   );
 
-  elements.forEach((el) => {
+  elements.forEach((el, index) => {
+    el.style.transitionDelay = `${index * 70}ms`;
     observer.observe(el);
   });
 }
@@ -104,12 +96,12 @@ function initIconHover() {
 
   icons.forEach((icon) => {
     icon.addEventListener("mouseenter", function () {
-      this.style.transform = "scale(1.18)";
+      this.style.transform = "translateY(0) scale(1.18)";
       this.style.color = "#08284d";
     });
 
     icon.addEventListener("mouseleave", function () {
-      this.style.transform = "scale(1)";
+      this.style.transform = "translateY(0) scale(1)";
       this.style.color = "#d8d8d8";
     });
   });
