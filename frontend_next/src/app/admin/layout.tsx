@@ -18,7 +18,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           console.error("Logout error:", error);
           alert("Gagal logout: " + error.message);
         } else {
-          // Force a full reload to clear all states and navigate to home
+
           window.location.href = '/';
         }
       }
@@ -31,7 +31,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-[#f4f7fb] text-[#08284d] dark:bg-[#0a192f] dark:text-[#ccd6f6] transition-colors duration-300">
       
-      {/* OVERLAY */}
+      
       {isSidebarOpen && (
         <div 
           className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm transition-opacity"
@@ -39,7 +39,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         />
       )}
 
-      {/* SIDEBAR */}
+      
       <aside className={`fixed inset-y-0 left-0 z-50 transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out w-[280px] md:w-[300px] bg-[#05244d] dark:bg-[#020c1b] p-[28px_18px] text-white flex flex-col shrink-0 shadow-2xl md:shadow-none`}>
         <div className="flex items-center justify-between mb-[34px]">
           <div className="flex items-center gap-[14px]">
@@ -73,10 +73,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
       </aside>
 
-      {/* MAIN CONTENT */}
+      
       <div className="flex-1 flex flex-col w-full md:w-auto">
         
-        {/* TOPBAR */}
+        
         <header className="h-[70px] bg-white dark:bg-[#112240] flex justify-between items-center px-[20px] md:px-[30px] border-b border-[#e5ebf2] dark:border-[#233554] transition-colors duration-300">
           <div className="flex items-center gap-[14px]">
             <button onClick={handleLogout} className="border-none bg-[#eef2f7] dark:bg-[#233554] px-[16px] md:px-[22px] py-[10px] md:py-[12px] rounded-[12px] text-[14px] md:text-[16px] font-bold cursor-pointer text-[#08284d] dark:text-[#ccd6f6] transition hover:bg-[#dde6f1] dark:hover:bg-[#1e2d4a]">
@@ -101,7 +101,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </header>
 
-        {/* INNER PAGE CONTENT */}
+        
         <div className="p-[18px] md:p-[28px_34px] overflow-y-auto">
           {children}
         </div>

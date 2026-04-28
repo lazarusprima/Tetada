@@ -7,7 +7,7 @@ export default function Dashboard() {
   const [barWidth, setBarWidth] = useState('0%');
 
   useEffect(() => {
-    // Trigger progress bar animation after a short delay
+
     const timer = setTimeout(() => {
       setBarWidth('55%');
     }, 300);
@@ -16,7 +16,7 @@ export default function Dashboard() {
 
   return (
     <>
-      {/* HERO */}
+      
       <div className="bg-[linear-gradient(135deg,#05244d,#0a3d8f)] text-white p-[34px] rounded-[22px] mb-[26px] shadow-lg">
         <p className="text-[18px] opacity-80 mb-[8px]">SELAMAT DATANG!</p>
         <h1 className="text-[42px] md:text-[72px] leading-none mb-[10px] font-bold">Admin</h1>
@@ -25,7 +25,7 @@ export default function Dashboard() {
         </span>
       </div>
 
-      {/* QUICK PANEL */}
+      
       <div className="bg-[#eef2f7] dark:bg-[#112240] rounded-[22px] p-[28px] mb-[26px] transition-colors duration-300">
         
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-[20px] mb-[28px]">
@@ -41,7 +41,7 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-[28px]">
           
-          {/* STOK CARD */}
+          
           <div className="bg-[#05244d] dark:bg-[#020c1b] text-white p-[30px] rounded-[22px] shadow-md transition-colors duration-300">
             <h4 className="text-[15px] mb-[18px] font-bold">STOK PAKET TERSISA</h4>
             <h1 className="text-[72px] md:text-[96px] leading-none mb-[10px] font-extrabold">128</h1>
@@ -54,7 +54,7 @@ export default function Dashboard() {
             <small className="text-[#c3d2e4]">Diperbarui manual oleh admin · 14.23 WIB</small>
           </div>
 
-          {/* JADWAL CARD */}
+          
           <div className="bg-white dark:bg-[#233554] p-[24px] rounded-[18px] shadow-md transition-colors duration-300">
             <h3 className="text-[32px] font-bold mb-[18px] dark:text-[#ccd6f6]">Jadwal Distribusi Hari Ini</h3>
             
@@ -77,7 +77,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ACTIVITY */}
+      
       <div className="bg-[#05244d] dark:bg-[#112240] text-white p-[30px] rounded-[22px] shadow-lg transition-colors duration-300">
         <h3 className="text-[28px] md:text-[40px] font-bold mb-[18px]">Recent Activity</h3>
         <p className="text-[18px] md:text-[24px] text-[#a7b8cd] mb-[12px] tracking-[1px]">Admin update stok menjadi 128 ............ 07.30 26/5/2026</p>

@@ -9,7 +9,7 @@ export default function Home() {
   const homeMaxStock = 200;
 
   useEffect(() => {
-    // Clock
+
     const updateClock = () => {
       const now = new Date();
       const h = String(now.getHours()).padStart(2, "0");
@@ -20,7 +20,6 @@ export default function Home() {
     updateClock();
     const interval = setInterval(updateClock, 1000);
 
-    // Fetch Stock
     const loadStock = async () => {
       const { data, error } = await supabase
         .from("stok_buah_susu")
@@ -41,7 +40,7 @@ export default function Home() {
 
   return (
     <>
-      {/* HERO SECTION */}
+      
       <section 
         className="py-[80px] min-h-[calc(100vh-100px)] flex flex-col justify-center bg-cover bg-center bg-no-repeat relative"
         style={{ backgroundImage: `linear-gradient(rgba(6,36,77,.86),rgba(6,36,77,.88)), url('/assets/homepage_tetada.jpg')` }}
@@ -111,7 +110,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* EVENTS SECTION */}
+      
       <section className="py-[70px]">
         <div className="w-[92%] max-w-[1600px] mx-auto">
           <div className="flex justify-between flex-wrap gap-[20px] mb-[28px]">
@@ -139,7 +138,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* DANGER SECTION */}
+      
       <section className="py-[70px]">
         <div className="w-[92%] max-w-[1600px] mx-auto">
           <div className="bg-[#06244d] text-white p-[40px] rounded-[24px] text-center flex flex-col items-center justify-center">

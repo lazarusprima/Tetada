@@ -8,7 +8,7 @@ export default function EditJadwalPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Logic to update database would go here
+
     alert("Jadwal berhasil diperbarui!");
     router.push('/admin/stok');
   };
@@ -16,7 +16,7 @@ export default function EditJadwalPage() {
   return (
     <div className="flex flex-col gap-[34px]">
       
-      {/* HEADER ROW */}
+      
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-[16px]">
         <div>
           <h1 className="text-[#1D3557] dark:text-white text-[22px] font-bold leading-[1.2] mb-[8px]">
@@ -35,10 +35,10 @@ export default function EditJadwalPage() {
         </Link>
       </div>
 
-      {/* FORM CONTAINER */}
+      
       <div className="bg-white dark:bg-[#112240] rounded-[30px] border border-[#E2E8F0] dark:border-[#233554] p-[23px_26px_47px] shadow-sm flex flex-col gap-[20px] max-w-[1056px]">
         
-        {/* Form Title */}
+        
         <div className="flex flex-col gap-[7px]">
           <h2 className="text-[#1D3557] dark:text-white font-bold text-[14px]">Jadwal Distribusi</h2>
           <div className="h-px bg-black dark:bg-[#233554] w-full border-t border-[#E2E8F0] dark:border-transparent"></div>
@@ -46,7 +46,7 @@ export default function EditJadwalPage() {
 
         <form className="flex flex-col gap-[24px] mt-[10px]" onSubmit={handleSubmit}>
           
-          {/* Row 1: Tanggal & Waktu */}
+          
           <div className="flex flex-col md:flex-row gap-[26px]">
             <div className="flex flex-col gap-[7px] flex-1">
               <label className="text-[#4A5568] dark:text-[#a8b2d1] font-bold text-[11px]">Tanggal Distribusi *</label>
@@ -81,7 +81,7 @@ export default function EditJadwalPage() {
             </div>
           </div>
 
-          {/* Row 2: Lokasi & Stok Paket Total */}
+          
           <div className="flex flex-col md:flex-row gap-[26px]">
             <div className="flex flex-col gap-[7px] flex-1">
               <label className="text-[#4A5568] dark:text-[#a8b2d1] font-bold text-[11px]">Lokasi *</label>
@@ -102,7 +102,7 @@ export default function EditJadwalPage() {
             </div>
           </div>
 
-          {/* Row 3: Stok Paket Sisa */}
+          
           <div className="flex flex-col md:flex-row gap-[26px]">
             <div className="flex flex-col gap-[7px] flex-1 md:max-w-[calc(50%-13px)]">
               <label className="text-[#4A5568] dark:text-[#a8b2d1] font-bold text-[11px]">Stok Paket Sisa *</label>
@@ -114,7 +114,7 @@ export default function EditJadwalPage() {
             </div>
           </div>
 
-          {/* Action Buttons */}
+          
           <div className="flex flex-col sm:flex-row gap-[15px] mt-[24px]">
             <button 
               type="submit"

@@ -1,15 +1,18 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { supabase } from '@/lib/supabase';
 
 export default function BuahSusu() {
   const [time, setTime] = useState('');
   const [showTimeline, setShowTimeline] = useState(false);
   const timelineRef = useRef<HTMLElement>(null);
   
-  const buahStock = 128;
-  const buahMaxStock = 340;
-  const percent = Math.round((buahStock / buahMaxStock) * 100);
+  const [buahStock, setBuahStock] = useState(0);
+  const [buahMaxStock, setBuahMaxStock] = useState(0);
+  const [schedule, setSchedule] = useState<any>(null);
+
+  const percent = buahMaxStock > 0 ? Math.round((buahStock / buahMaxStock) * 100) : 0;
 
   useEffect(() => {
     const updateClock = () => {
@@ -21,6 +24,25 @@ export default function BuahSusu() {
     };
     updateClock();
     const interval = setInterval(updateClock, 1000);
+
+    const fetchStok = async () => {
+      const { data } = await supabase.from('stok_buah_susu').select('jumlah, max_stok').ilike('status', 'aktif').order('updated_at', { ascending: false }).limit(1).single();
+      if (data) {
+        setBuahStock(data.jumlah || 0);
+        setBuahMaxStock(data.max_stok || 0);
+      }
+    };
+
+    const fetchSchedule = async () => {
+      const today = new Date().toISOString().split('T')[0];
+      const { data } = await supabase.from('jadwal_distribusi').select('*').gte('tanggal_distribusi', today).order('tanggal_distribusi', { ascending: true }).limit(1).single();
+      if (data) {
+        setSchedule(data);
+      }
+    };
+
+    fetchStok();
+    fetchSchedule();
 
     const observer = new IntersectionObserver((entries) => {
       const [entry] = entries;
@@ -42,7 +64,7 @@ export default function BuahSusu() {
 
   return (
     <>
-      {/* HERO SECTION */}
+      
       <section 
         className="py-[70px] text-center text-white bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `linear-gradient(rgba(6,36,77,.84),rgba(6,36,77,.88)), url('/assets/buah_susu.jpg')` }}
@@ -55,11 +77,11 @@ export default function BuahSusu() {
         </div>
       </section>
 
-      {/* TOP GRID SECTION */}
+      
       <section className="py-[50px]">
         <div className="w-[92%] max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-[30px]">
           
-          {/* STOCK CARD */}
+          
           <div className="bg-[#082f5d] text-white p-[34px] rounded-[24px] shadow-[0_10px_24px_rgba(0,0,0,.05)]">
             <h5 className="font-bold mb-[10px]">STOK PAKET TERSISA</h5>
             <div className="text-[60px] md:text-[92px] font-extrabold leading-none mb-[10px]">
@@ -80,22 +102,31 @@ export default function BuahSusu() {
             </div>
           </div>
 
-          {/* INFO CARD */}
+          
           <div className="bg-white dark:bg-[#112240] p-[34px] rounded-[24px] shadow-[0_10px_24px_rgba(0,0,0,.05)] text-[#08284d] dark:text-[#ccd6f6] transition-colors duration-300">
-            <h3 className="text-[28px] md:text-[36px] font-bold mb-[26px]">Jadwal Distribusi Hari Ini</h3>
+            <h3 className="text-[28px] md:text-[36px] font-bold mb-[26px]">Jadwal Distribusi Berikutnya</h3>
             
-            <div className="flex justify-between py-[14px] border-b border-[#edf2f7] dark:border-[#233554]">
-              <span className="text-[#718096] dark:text-[#8892b0]">Tanggal</span>
-              <b className="font-bold">Rabu, 19 Maret 2025</b>
-            </div>
-            <div className="flex justify-between py-[14px] border-b border-[#edf2f7] dark:border-[#233554]">
-              <span className="text-[#718096] dark:text-[#8892b0]">Waktu</span>
-              <b className="font-bold">14.00 - 16.00 WIB</b>
-            </div>
-            <div className="flex justify-between py-[14px] border-b border-[#edf2f7] dark:border-[#233554]">
-              <span className="text-[#718096] dark:text-[#8892b0]">Lokasi</span>
-              <b className="font-bold">Gedung Rektorat Lt.1</b>
-            </div>
+            {schedule ? (
+              <>
+                <div className="flex justify-between py-[14px] border-b border-[#edf2f7] dark:border-[#233554]">
+                  <span className="text-[#718096] dark:text-[#8892b0]">Tanggal</span>
+                  <b className="font-bold">{new Date(schedule.tanggal_distribusi).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</b>
+                </div>
+                <div className="flex justify-between py-[14px] border-b border-[#edf2f7] dark:border-[#233554]">
+                  <span className="text-[#718096] dark:text-[#8892b0]">Waktu</span>
+                  <b className="font-bold">{schedule.waktu}</b>
+                </div>
+                <div className="flex justify-between py-[14px] border-b border-[#edf2f7] dark:border-[#233554]">
+                  <span className="text-[#718096] dark:text-[#8892b0]">Lokasi</span>
+                  <b className="font-bold">{schedule.lokasi}</b>
+                </div>
+              </>
+            ) : (
+              <div className="py-[20px] text-center text-[#718096] dark:text-[#8892b0]">
+                Belum ada jadwal distribusi terdekat.
+              </div>
+            )}
+            
             <div className="flex justify-between py-[14px] border-b border-[#edf2f7] dark:border-[#233554]">
               <span className="text-[#718096] dark:text-[#8892b0]">Syarat</span>
               <b className="font-bold">KTM / e-KTM Aktif</b>
@@ -109,17 +140,17 @@ export default function BuahSusu() {
         </div>
       </section>
 
-      {/* TIMELINE SECTION */}
+      
       <section ref={timelineRef} className="py-[90px] text-center">
         <div className="w-[92%] max-w-[1600px] mx-auto">
           <small className="block text-[15px] tracking-[3px] font-bold text-[#5d7794] mb-[14px]">OPERATIONAL PROTOCOL</small>
           <h2 className="text-[40px] md:text-[58px] font-bold mb-[70px]">Panduan Antrean</h2>
 
           <div className="relative grid grid-cols-1 lg:grid-cols-[1fr_80px_1fr] gap-y-[28px] items-center max-w-[1300px] mx-auto">
-            {/* Center Line for Desktop */}
+            
             <div className="hidden lg:block absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[2px] bg-[#d8e1ea]"></div>
 
-            {/* Timeline Items */}
+            
             {[
               { id: 1, icon: 'fa-ticket', title: '01. Ambil Nomor Antrean', desc: 'Dapatkan nomor antrean di area pembagian.', pos: 'left' },
               { id: 2, icon: 'fa-box-open', title: '02. Tunggu Sampai Paket Siap Dibagikan', desc: 'Silakan menunggu di dekat area pembagian.', pos: 'right' },

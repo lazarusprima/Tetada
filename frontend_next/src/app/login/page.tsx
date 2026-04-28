@@ -43,7 +43,7 @@ export default function Login() {
     <main className="min-h-screen relative flex flex-col bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `linear-gradient(rgba(6,36,77,.82), rgba(6,36,77,.88)), url('/assets/homepage_tetada.jpg')` }}>
       
-      {/* NAVBAR */}
+      
       <header className="bg-[#06244d] py-[14px] shadow-[0_8px_24px_rgba(0,0,0,.18)] relative z-10">
         <div className="w-[92%] max-w-[1600px] mx-auto flex items-center justify-between gap-[20px] md:flex-row flex-col md:items-center items-start">
           
@@ -62,7 +62,7 @@ export default function Login() {
         </div>
       </header>
 
-      {/* LOGIN SECTION */}
+      
       <section className="flex-1 flex justify-center items-center p-[20px] md:p-[40px] relative z-10">
         <div className="w-full max-w-[520px] rounded-[24px] md:rounded-[30px] p-[34px] md:p-[48px] border border-white/50 shadow-[0_30px_60px_rgba(0,0,0,.18),0_12px_25px_rgba(0,0,0,.08),inset_0_2px_0_rgba(255,255,255,.95),inset_0_-8px_18px_rgba(0,0,0,.03)]"
              style={{ background: `linear-gradient(145deg, #f8fafc, #eef2f6)` }}>
@@ -106,7 +106,7 @@ export default function Login() {
         </div>
       </section>
 
-      {/* TOAST NOTIFICATION */}
+      
       <div className={`fixed top-[16px] left-[16px] right-[16px] md:top-[24px] md:left-auto md:right-[24px] z-[9999] min-w-auto md:min-w-[280px] max-w-none md:max-w-[360px] p-[18px_20px] rounded-[16px] text-white shadow-[0_18px_40px_rgba(0,0,0,.18)] flex flex-col gap-[6px] transition-all duration-300 ${toast.show ? 'translate-y-0 opacity-100' : '-translate-y-[20px] opacity-0 pointer-events-none'} ${toast.type === 'success' ? 'bg-[#16a34a]' : 'bg-[#dc2626]'}`}>
         <strong className="text-[16px]">{toast.title}</strong>
         <span className="text-[14px] opacity-95">{toast.message}</span>
