@@ -26,10 +26,15 @@ export default function BuahSusu() {
     const interval = setInterval(updateClock, 1000);
 
     const fetchStok = async () => {
-      const { data } = await supabase.from('stok_buah_susu').select('jumlah, max_stok').ilike('status', 'aktif').order('updated_at', { ascending: false }).limit(1).single();
+      const now = new Date();
+      const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      const { data } = await supabase.from('jadwal_distribusi').select('stok_paket_sisa, stok_paket_total').eq('tanggal_distribusi', todayStr).gt('stok_paket_sisa', 0).order('tanggal_distribusi', { ascending: false }).limit(1).single();
       if (data) {
-        setBuahStock(data.jumlah || 0);
-        setBuahMaxStock(data.max_stok || 0);
+        setBuahStock(data.stok_paket_sisa || 0);
+        setBuahMaxStock(data.stok_paket_total || 0);
+      } else {
+        setBuahStock(0);
+        setBuahMaxStock(0);
       }
     };
 
@@ -114,7 +119,7 @@ export default function BuahSusu() {
                 </div>
                 <div className="flex justify-between py-[14px] border-b border-[#edf2f7] dark:border-[#233554]">
                   <span className="text-[#718096] dark:text-[#8892b0]">Waktu</span>
-                  <b className="font-bold">{schedule.waktu}</b>
+                  <b className="font-bold">{schedule.waktu ? schedule.waktu.substring(0, 5) : ''}</b>
                 </div>
                 <div className="flex justify-between py-[14px] border-b border-[#edf2f7] dark:border-[#233554]">
                   <span className="text-[#718096] dark:text-[#8892b0]">Lokasi</span>

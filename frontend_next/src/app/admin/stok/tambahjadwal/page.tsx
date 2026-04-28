@@ -13,11 +13,16 @@ export default function TambahJadwalPage() {
   const [lokasi, setLokasi] = useState('');
   const [stokTotal, setStokTotal] = useState('200');
   const [stokSisa, setStokSisa] = useState('200');
-  const [status, setStatus] = useState('aktif');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (parseInt(stokSisa) > parseInt(stokTotal)) {
+      alert("Stok paket total tidak boleh kurang dari stok paket sisa!");
+      return;
+    }
+
     setIsSubmitting(true);
 
     const { error } = await supabase.from('jadwal_distribusi').insert([
@@ -34,7 +39,7 @@ export default function TambahJadwalPage() {
       {
         jumlah: parseInt(stokSisa),
         max_stok: parseInt(stokTotal),
-        status: status.toLowerCase()
+        status: 'aktif'
       }
     ]);
 
@@ -160,19 +165,7 @@ export default function TambahJadwalPage() {
                 className="bg-[#F8FAFC] dark:bg-[#0a192f] border-[1.4px] border-[#E2E8F0] dark:border-[#233554] rounded-[12px] px-[16px] h-[46px] text-[#2B6CB0] dark:text-[#63b3ed] text-[12px] focus:outline-none focus:border-blue-500"
               />
             </div>
-
-            <div className="flex flex-col gap-[7px] flex-1">
-              <label className="text-[#4A5568] dark:text-[#a8b2d1] font-bold text-[11px]">Status Stok *</label>
-              <select 
-                required
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className="bg-[#F8FAFC] dark:bg-[#0a192f] border-[1.4px] border-[#E2E8F0] dark:border-[#233554] rounded-[12px] px-[16px] h-[46px] text-[#1D3557] dark:text-[#ccd6f6] font-bold text-[12px] focus:outline-none focus:border-blue-500 cursor-pointer"
-              >
-                <option value="aktif">Aktif</option>
-                <option value="selesai">Selesai</option>
-              </select>
-            </div>
+            <div className="flex-1 hidden md:block"></div>
           </div>
 
           

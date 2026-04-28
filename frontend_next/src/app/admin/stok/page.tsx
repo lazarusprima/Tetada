@@ -11,6 +11,7 @@ export default function AdminStokPage() {
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState<any>(null);
+  const [activeScheduleId, setActiveScheduleId] = useState<string | null>(null);
 
   const [schedules, setSchedules] = useState<any[]>([]);
 
@@ -18,15 +19,36 @@ export default function AdminStokPage() {
     const { data } = await supabase.from('jadwal_distribusi').select('*').order('tanggal_distribusi', { ascending: false });
     if (data) {
       setSchedules(data);
-      setTotalDistribusi(data.length);
+      
+      const now = new Date();
+      const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      
+      const count = data.filter(s => {
+        let status = "Akan Datang";
+        if (s.stok_paket_sisa <= 0 || s.tanggal_distribusi < todayStr) {
+          status = "Selesai";
+        } else if (s.tanggal_distribusi === todayStr) {
+          status = "Aktif";
+        }
+        return status === 'Aktif' || status === 'Selesai';
+      }).length;
+      
+      setTotalDistribusi(count);
     }
   };
 
   const fetchStok = async () => {
-    const { data } = await supabase.from('stok_buah_susu').select('jumlah, max_stok').ilike('status', 'aktif').order('updated_at', { ascending: false }).limit(1).single();
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const { data } = await supabase.from('jadwal_distribusi').select('id, stok_paket_sisa, stok_paket_total').eq('tanggal_distribusi', todayStr).order('tanggal_distribusi', { ascending: false }).limit(1).single();
     if (data) {
-      setStock(data.jumlah || 0);
-      setMaxStock(data.max_stok || 0);
+      setStock(data.stok_paket_sisa || 0);
+      setMaxStock(data.stok_paket_total || 0);
+      setActiveScheduleId(data.id);
+    } else {
+      setStock(0);
+      setMaxStock(0);
+      setActiveScheduleId(null);
     }
   };
 
@@ -49,41 +71,34 @@ export default function AdminStokPage() {
     if (selectedSchedule) {
       const { error } = await supabase.from('jadwal_distribusi').delete().eq('id', selectedSchedule.id);
       if (!error) {
-        setSchedules(schedules.filter(s => s.id !== selectedSchedule.id));
+        fetchSchedules();
+        fetchStok();
       }
       closeDeleteModal();
     }
   };
 
-  const handleStatusChange = async (id: any, newStatus: string) => {
-    // Jika user memilih "Aktif", pastikan yang lain berubah menjadi "Selesai" di UI
-    if (newStatus === 'Aktif') {
-      setSchedules(prev => prev.map(s => 
-        s.id === id ? { ...s, status: 'Aktif' } : (s.status === 'Aktif' ? { ...s, status: 'Selesai' } : s)
-      ));
+  const updateStock = async (amount: number) => {
+    if (!activeScheduleId) return;
+    const newStock = stock + amount;
+    if (newStock < 0 || newStock > maxStock) return;
+    
+    // Optimistic UI update
+    setStock(newStock);
+    setSchedules(prev => prev.map(s => s.id === activeScheduleId ? { ...s, stok_paket_sisa: newStock } : s));
 
-      // Nonaktifkan jadwal lain yang sedang "Aktif" di database (diubah jadi "Selesai")
-      await supabase
-        .from('jadwal_distribusi')
-        .update({ status: 'Selesai' })
-        .eq('status', 'Aktif')
-        .neq('id', id);
+    const { error } = await supabase.from('jadwal_distribusi').update({ stok_paket_sisa: newStock }).eq('id', activeScheduleId);
+    if (!error) {
+      // Record activity log
+      await supabase.from('stok_buah_susu').insert([{ jumlah: newStock, max_stok: maxStock, status: 'aktif' }]);
     } else {
-      // Update normal di UI
-      setSchedules(prev => prev.map(s => s.id === id ? { ...s, status: newStatus } : s));
-    }
-
-    // Update data jadwal yang dipilih di Supabase
-    const { error } = await supabase
-      .from('jadwal_distribusi')
-      .update({ status: newStatus })
-      .eq('id', id);
-
-    if (error) {
-      alert(`Gagal mengubah status: ${error.message}`);
-      fetchSchedules(); // Revert ke data asli dari database
+      fetchStok();
+      fetchSchedules();
+      alert("Gagal mengupdate stok.");
     }
   };
+
+
 
   return (
     <div className="flex flex-col gap-[34px]">
@@ -177,7 +192,7 @@ export default function AdminStokPage() {
                  const scheduleDate = new Date(s.tanggal_distribusi);
                  const today = new Date();
                  today.setHours(0,0,0,0);
-                 let status = s.status; if (!status) { const today = new Date(); today.setHours(0,0,0,0); status = scheduleDate < today ? "Selesai" : (scheduleDate > today ? "Akan Datang" : "Aktif"); }
+                 let status = s.status; if (!status) { status = scheduleDate < today ? "Selesai" : (scheduleDate > today ? "Akan Datang" : "Aktif"); }
                  
                  return (
                  <tr key={s.id} className="border-b border-[#E2E8F0] dark:border-[#233554] hover:bg-gray-50 dark:hover:bg-[#1e2d4a] transition-colors">
@@ -188,13 +203,15 @@ export default function AdminStokPage() {
                      <div className="text-[13px] text-[#4A5568] dark:text-[#8892b0]">{s.lokasi}</div>
                    </td>
                    <td className="py-[18px] px-[24px]">
-                     <div className="text-[13px] text-[#4A5568] dark:text-[#8892b0]">{s.waktu}</div>
+                     <div className="text-[13px] text-[#4A5568] dark:text-[#8892b0]">{s.waktu ? s.waktu.substring(0, 5) : ''}</div>
                    </td>
                    <td className="py-[18px] px-[24px]">
                      <div className="text-[13px] text-[#718096] dark:text-[#8892b0]">{s.stok_paket_sisa} / {s.stok_paket_total}</div>
                    </td>
                    <td className="py-[18px] px-[24px]">
-                     <div className="relative inline-block"><select value={status} onChange={(e) => handleStatusChange(s.id, e.target.value)} className={`appearance-none text-[11px] font-bold px-[12px] py-[6px] pr-[24px] rounded-[6px] border-none outline-none cursor-pointer transition-colors ${status === 'Selesai' ? 'bg-[#E2E8F0] dark:bg-[#233554] text-[#718096] dark:text-[#ccd6f6] hover:bg-[#CBD5E0] dark:hover:bg-[#1e2d4a]' : (status === 'Aktif' || status === 'Hari Ini' ? 'bg-[#d8fff0] text-[#15803d] hover:bg-[#bbf7d0]' : 'bg-[#e0f2fe] text-[#0369a1] hover:bg-[#bae6fd]')}`}><option value="Akan Datang">Akan Datang</option><option value="Aktif">Aktif</option><option value="Selesai">Selesai</option></select><i className="fa-solid fa-chevron-down absolute right-[8px] top-1/2 -translate-y-1/2 text-[9px] pointer-events-none opacity-60"></i></div>
+                     <div className={`inline-block text-[11px] font-bold px-[12px] py-[6px] rounded-[6px] ${status === 'Selesai' ? 'bg-[#E2E8F0] dark:bg-[#233554] text-[#718096] dark:text-[#ccd6f6]' : (status === 'Aktif' ? 'bg-[#d8fff0] text-[#15803d]' : 'bg-[#e0f2fe] text-[#0369a1]')}`}>
+                       {status}
+                     </div>
                    </td>
                    <td className="py-[18px] px-[24px]">
                      <div className="flex items-center gap-[8px]">

@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
 export default function Home() {
-  const [homeStock, setHomeStock] = useState(150);
+  const [homeStock, setHomeStock] = useState(0);
   const [time, setTime] = useState('');
-  const homeMaxStock = 200;
+  const [homeMaxStock, setHomeMaxStock] = useState(0);
 
   useEffect(() => {
 
@@ -21,14 +21,23 @@ export default function Home() {
     const interval = setInterval(updateClock, 1000);
 
     const loadStock = async () => {
+      const now = new Date();
+      const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       const { data, error } = await supabase
-        .from("stok_buah_susu")
-        .select("*")
+        .from('jadwal_distribusi')
+        .select('stok_paket_sisa, stok_paket_total')
+        .eq('tanggal_distribusi', todayStr)
+        .gt('stok_paket_sisa', 0)
+        .order('tanggal_distribusi', { ascending: false })
         .limit(1)
         .single();
       
       if (!error && data) {
-        setHomeStock(data.stock);
+        setHomeStock(data.stok_paket_sisa || 0);
+        setHomeMaxStock(data.stok_paket_total || 0);
+      } else {
+        setHomeStock(0);
+        setHomeMaxStock(0);
       }
     };
     loadStock();
@@ -36,7 +45,7 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  const percent = Math.round((homeStock / homeMaxStock) * 100);
+  const percent = homeMaxStock > 0 ? Math.round((homeStock / homeMaxStock) * 100) : 0;
 
   return (
     <>
@@ -85,7 +94,7 @@ export default function Home() {
                   TOTAL KETERSEDIAAN HARI INI
                 </h5>
                 <div className="text-[62px] md:text-[92px] leading-[0.95] font-extrabold tracking-[-2px] mb-[18px] drop-shadow-[0_10px_24px_rgba(0,0,0,.22)]">
-                  <span>{homeStock}</span> / 200
+                  <span>{homeStock}</span> / {homeMaxStock}
                 </div>
                 <p className="text-[16px] leading-[1.5] opacity-95 mb-[22px]">
                   Paket tersisa di semua titik distribusi.
