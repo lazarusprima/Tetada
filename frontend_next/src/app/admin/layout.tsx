@@ -55,19 +55,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
 
         <nav className="flex flex-col gap-[10px]">
-          <Link href="/admin/dashboard" className={`no-underline p-[14px_16px] rounded-[14px] font-semibold flex items-center gap-[12px] transition duration-200 ${pathname === '/admin/dashboard' ? 'bg-[#173f97] text-white' : 'text-[#7ea2c8] hover:bg-[#0c3470] hover:text-white'}`}>
+          <Link href="/admin/dashboard" className={`no-underline p-[14px_16px] rounded-[14px] font-semibold flex items-center gap-[12px] transition duration-200 ${pathname.startsWith('/admin/dashboard') ? 'bg-[#173f97] text-white' : 'text-[#7ea2c8] hover:bg-[#0c3470] hover:text-white'}`}>
             <i className="fa-solid fa-table-columns w-[20px]"></i> BERANDA
           </Link>
-          <Link href="/admin/stok" className={`no-underline p-[14px_16px] rounded-[14px] font-semibold flex items-center gap-[12px] transition duration-200 ${pathname === '/admin/stok' ? 'bg-[#173f97] text-white' : 'text-[#7ea2c8] hover:bg-[#0c3470] hover:text-white'}`}>
+          <Link href="/admin/stok" className={`no-underline p-[14px_16px] rounded-[14px] font-semibold flex items-center gap-[12px] transition duration-200 ${pathname.startsWith('/admin/stok') ? 'bg-[#173f97] text-white' : 'text-[#7ea2c8] hover:bg-[#0c3470] hover:text-white'}`}>
             <i className="fa-solid fa-apple-whole w-[20px]"></i> BUAH & SUSU
           </Link>
-          <Link href="/admin/events" className={`no-underline p-[14px_16px] rounded-[14px] font-semibold flex items-center gap-[12px] transition duration-200 ${pathname === '/admin/events' ? 'bg-[#173f97] text-white' : 'text-[#7ea2c8] hover:bg-[#0c3470] hover:text-white'}`}>
+          <Link href="/admin/events" className={`no-underline p-[14px_16px] rounded-[14px] font-semibold flex items-center gap-[12px] transition duration-200 ${pathname.startsWith('/admin/events') ? 'bg-[#173f97] text-white' : 'text-[#7ea2c8] hover:bg-[#0c3470] hover:text-white'}`}>
             <i className="fa-regular fa-calendar w-[20px]"></i> EVENTS
           </Link>
-          <Link href="/admin/archive" className={`no-underline p-[14px_16px] rounded-[14px] font-semibold flex items-center gap-[12px] transition duration-200 ${pathname === '/admin/archive' ? 'bg-[#173f97] text-white' : 'text-[#7ea2c8] hover:bg-[#0c3470] hover:text-white'}`}>
+          <Link href="/admin/archive" className={`no-underline p-[14px_16px] rounded-[14px] font-semibold flex items-center gap-[12px] transition duration-200 ${pathname.startsWith('/admin/archive') ? 'bg-[#173f97] text-white' : 'text-[#7ea2c8] hover:bg-[#0c3470] hover:text-white'}`}>
             <i className="fa-regular fa-folder w-[20px]"></i> ARCHIVE
           </Link>
-          <Link href="/admin/reports" className={`no-underline p-[14px_16px] rounded-[14px] font-semibold flex items-center gap-[12px] transition duration-200 ${pathname === '/admin/reports' ? 'bg-[#173f97] text-white' : 'text-[#7ea2c8] hover:bg-[#0c3470] hover:text-white'}`}>
+          <Link href="/admin/reports" className={`no-underline p-[14px_16px] rounded-[14px] font-semibold flex items-center gap-[12px] transition duration-200 ${pathname.startsWith('/admin/reports') ? 'bg-[#173f97] text-white' : 'text-[#7ea2c8] hover:bg-[#0c3470] hover:text-white'}`}>
             <i className="fa-solid fa-snowflake w-[20px]"></i> EMERGENCY REPORTS
           </Link>
         </nav>
