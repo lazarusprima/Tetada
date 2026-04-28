@@ -76,9 +76,6 @@ export default function Home() {
               >
                 Laporkan Insiden
               </button>
-              <button className="py-[15px] px-[22px] bg-transparent border-[2px] border-white text-white rounded-[12px] font-bold cursor-pointer hover:bg-white/10 transition">
-                Layanan Mahasiswa
-              </button>
             </div>
           </div>
 
@@ -89,14 +86,14 @@ export default function Home() {
             <div className="absolute left-[18px] right-[18px] bottom-[18px] md:left-[24px] md:right-[24px] md:bottom-[24px] h-[64px] md:h-[76px] rounded-[18px] bg-white/5 backdrop-blur-[14px] z-10 pointer-events-none"></div>
             
             <div className="relative z-20 h-full flex flex-col justify-between">
-              <div>
+              <div className="rounded-[16px] bg-black/[0.12] backdrop-blur-[6px] px-[16px] pt-[16px] pb-[12px] -mx-[4px]">
                 <h5 className="text-[15px] font-bold tracking-[1.4px] uppercase opacity-95 mb-[14px]">
                   TOTAL KETERSEDIAAN HARI INI
                 </h5>
                 <div className="text-[62px] md:text-[92px] leading-[0.95] font-extrabold tracking-[-2px] mb-[18px] drop-shadow-[0_10px_24px_rgba(0,0,0,.22)]">
                   <span>{homeStock}</span> / {homeMaxStock}
                 </div>
-                <p className="text-[16px] leading-[1.5] opacity-95 mb-[22px]">
+                <p className="text-[16px] leading-[1.5] opacity-95 mb-[4px]">
                   Paket tersisa di semua titik distribusi.
                 </p>
               </div>
@@ -163,9 +160,6 @@ export default function Home() {
               >
                 <span>✚</span>
                 <span>DARURAT SEKARANG</span>
-              </button>
-              <button className="py-[15px] px-[20px] bg-white text-[#06244d] border-none rounded-[12px] font-bold cursor-pointer hover:bg-gray-100 transition">
-                LAPORKAN INSIDEN NON-DARURAT
               </button>
             </div>
           </div>
