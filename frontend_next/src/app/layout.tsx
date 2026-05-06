@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: "TETADA IPB",
   description: "Tim Tanggap Darurat IPB University",
   icons: {
-    icon: "/assets/logo_tetada.jpeg",
+    icon: "/assets/logo_tetada.png",
   },
 };
 

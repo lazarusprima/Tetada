@@ -28,7 +28,7 @@ export default function Navbar() {
           
           <div className="flex items-center gap-[12px]">
             <div className="w-[42px] h-[42px] md:w-[50px] md:h-[50px] rounded-full overflow-hidden shrink-0 bg-white">
-              <img src="/assets/logo_tetada.jpeg" alt="Logo TETADA" className="w-full h-full object-cover" />
+              <img src="/assets/logo_tetada.png" alt="Logo TETADA" className="w-full h-full object-cover" />
             </div>
             <div className="flex flex-col">
               <h2 className="text-[18px] md:text-[22px] text-white font-bold leading-none mb-[4px] whitespace-nowrap">TETADA IPB</h2>
@@ -68,7 +68,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between mb-[34px]">
           <div className="flex items-center gap-[12px]">
             <div className="w-[42px] h-[42px] rounded-full overflow-hidden shrink-0 bg-white">
-              <img src="/assets/logo_tetada.jpeg" alt="Logo TETADA" className="w-full h-full object-cover" />
+              <img src="/assets/logo_tetada.png" alt="Logo TETADA" className="w-full h-full object-cover" />
             </div>
             <div className="flex flex-col">
               <h2 className="text-[18px] text-white font-bold leading-none mb-[4px] whitespace-nowrap">TETADA IPB</h2>

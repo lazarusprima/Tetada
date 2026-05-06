@@ -198,7 +198,7 @@ export default function ArchivePage() {
                           
                           <div className="mt-auto pt-[4px]">
                             <a 
-                              href={item.link_url || '#'} 
+                              href={`/archive/${item.id}`} 
                               className="inline-block font-['Inter',sans-serif] font-bold text-[12px] leading-[16px] uppercase text-[#1D3557] border-b-[2px] border-[#1D3557] pb-[4px] hover:text-[#FF715D] hover:border-[#FF715D] transition-colors w-fit"
                             >
                               LIHAT DETAIL

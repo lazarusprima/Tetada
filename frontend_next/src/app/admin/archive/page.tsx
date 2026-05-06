@@ -18,10 +18,10 @@ export default function AdminArchive() {
   const [archives, setArchives] = useState<ArchiveItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ArchiveItem | null>(null);
-  
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -37,7 +37,7 @@ export default function AdminArchive() {
       .from('archive_kegiatan')
       .select('*')
       .order('year', { ascending: false });
-    
+
     if (error) {
       console.error('Error fetching archives:', error);
     } else {
@@ -96,18 +96,18 @@ export default function AdminArchive() {
           .from('archive_kegiatan')
           .update(formData)
           .eq('id', editingItem.id);
-        
+
         if (error) throw error;
         alert('Data berhasil diperbarui!');
       } else {
         const { error } = await supabase
           .from('archive_kegiatan')
           .insert([formData]);
-        
+
         if (error) throw error;
         alert('Data berhasil ditambahkan!');
       }
-      
+
       handleCloseModal();
       fetchArchives();
     } catch (error: any) {
@@ -123,7 +123,7 @@ export default function AdminArchive() {
           .from('archive_kegiatan')
           .delete()
           .eq('id', id);
-        
+
         if (error) throw error;
         alert('Data berhasil dihapus!');
         fetchArchives();
@@ -134,8 +134,8 @@ export default function AdminArchive() {
     }
   };
 
-  const filteredArchives = archives.filter(item => 
-    item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+  const filteredArchives = archives.filter(item =>
+    item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.year.toString().includes(searchQuery)
@@ -154,22 +154,22 @@ export default function AdminArchive() {
         <h2 className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[16px] text-[#1D3557] dark:text-gray-200 transition-colors">
           Daftar Kegiatan
         </h2>
-        
+
         <div className="flex flex-col sm:flex-row items-center gap-[16px] w-full sm:w-auto">
           <div className="relative w-full sm:w-[300px]">
             <span className="absolute left-[12px] top-[50%] -translate-y-1/2 text-gray-400 dark:text-gray-500">
               🔍
             </span>
-            <input 
-              type="text" 
-              placeholder="Cari event..." 
+            <input
+              type="text"
+              placeholder="Cari event..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-[#F0F2F5] dark:bg-[#112240] border border-[#E2E8F0] dark:border-[#233554] rounded-[8px] py-[8px] pl-[36px] pr-[16px] text-[14px] text-gray-900 dark:text-white outline-none focus:border-[#031F41] dark:focus:border-blue-500 transition-colors"
             />
           </div>
-          
-          <Link 
+
+          <Link
             href="/admin/archive/create"
             className="w-full sm:w-auto bg-[#031F41] dark:bg-[#173f97] text-white font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[14px] px-[20px] py-[10px] rounded-[8px] hover:bg-[#102F77] dark:hover:bg-[#1e4eb8] transition-colors whitespace-nowrap text-center"
           >
@@ -249,13 +249,13 @@ export default function AdminArchive() {
                     </td>
                     <td className="py-[16px] px-[24px]">
                       <div className="flex items-center justify-center gap-[8px]">
-                        <button 
+                        <button
                           onClick={() => handleOpenModal(item)}
                           className="bg-[#EBF8FF] dark:bg-blue-900/30 text-[#2B6CB0] dark:text-blue-400 font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[12px] px-[16px] py-[6px] rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
                         >
                           Edit
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleDelete(item.id)}
                           className="bg-[#FFF5F5] dark:bg-red-900/30 text-[#C53030] dark:text-red-400 font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[12px] px-[16px] py-[6px] rounded-full hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"
                         >
@@ -284,12 +284,12 @@ export default function AdminArchive() {
             <h2 className="text-[24px] font-bold text-[#031F41] dark:text-white mb-[24px] transition-colors">
               {editingItem ? 'Edit Kegiatan' : 'Tambah Kegiatan Baru'}
             </h2>
-            
+
             <form onSubmit={handleSubmit} className="flex flex-col gap-[20px]">
               <div className="flex flex-col gap-[8px]">
                 <label className="text-[14px] font-semibold text-[#4A5568] dark:text-gray-300">Nama Kegiatan</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
@@ -302,8 +302,8 @@ export default function AdminArchive() {
               <div className="grid grid-cols-2 gap-[20px]">
                 <div className="flex flex-col gap-[8px]">
                   <label className="text-[14px] font-semibold text-[#4A5568] dark:text-gray-300">Kategori</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     name="category"
                     value={formData.category}
                     onChange={handleChange}
@@ -314,8 +314,8 @@ export default function AdminArchive() {
                 </div>
                 <div className="flex flex-col gap-[8px]">
                   <label className="text-[14px] font-semibold text-[#4A5568] dark:text-gray-300">Tahun</label>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     name="year"
                     value={formData.year}
                     onChange={handleChange}
@@ -327,12 +327,16 @@ export default function AdminArchive() {
               </div>
 
               <div className="flex flex-col gap-[8px]">
-                <label className="text-[14px] font-semibold text-[#4A5568] dark:text-gray-300">Deskripsi Lengkap</label>
-                <textarea 
+                <label className="text-[14px] font-semibold text-[#4A5568] dark:text-gray-300 flex justify-between">
+                  <span>Deskripsi Lengkap</span>
+                  <span className="font-normal text-[#A0AEC0] text-[12px]">{formData.description.length} / 750 karakter</span>
+                </label>
+                <textarea
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
                   required
+                  maxLength={750}
                   rows={4}
                   className="w-full bg-transparent border border-gray-300 dark:border-[#233554] rounded-[8px] px-[16px] py-[10px] text-gray-900 dark:text-white outline-none focus:border-[#031F41] dark:focus:border-blue-500 resize-none transition-colors"
                   placeholder="Penjelasan detail tentang kegiatan tersebut..."
@@ -341,8 +345,8 @@ export default function AdminArchive() {
 
               <div className="flex flex-col gap-[8px]">
                 <label className="text-[14px] font-semibold text-[#4A5568] dark:text-gray-300">URL Gambar / File (Opsional)</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   name="image_url"
                   value={formData.image_url}
                   onChange={handleChange}
@@ -353,8 +357,8 @@ export default function AdminArchive() {
 
               <div className="flex flex-col gap-[8px]">
                 <label className="text-[14px] font-semibold text-[#4A5568] dark:text-gray-300">Link Detail Kegiatan (Opsional)</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   name="link_url"
                   value={formData.link_url}
                   onChange={handleChange}
@@ -364,14 +368,14 @@ export default function AdminArchive() {
               </div>
 
               <div className="flex justify-end gap-[12px] mt-[12px] pt-[20px] border-t border-gray-200 dark:border-[#233554] transition-colors">
-                <button 
+                <button
                   type="button"
                   onClick={handleCloseModal}
                   className="px-[20px] py-[10px] rounded-[8px] font-bold text-[#4A5568] dark:text-gray-300 bg-gray-100 dark:bg-[#233554] hover:bg-gray-200 dark:hover:bg-[#2a3f66] transition-colors"
                 >
                   Batal
                 </button>
-                <button 
+                <button
                   type="submit"
                   className="px-[20px] py-[10px] rounded-[8px] font-bold text-white bg-[#031F41] dark:bg-[#173f97] hover:bg-[#102F77] dark:hover:bg-[#1e4eb8] transition-colors"
                 >

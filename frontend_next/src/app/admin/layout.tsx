@@ -43,7 +43,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className={`fixed inset-y-0 left-0 z-50 transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out w-[280px] md:w-[300px] bg-[#05244d] dark:bg-[#020c1b] p-[28px_18px] text-white flex flex-col shrink-0 shadow-2xl md:shadow-none`}>
         <div className="flex items-center justify-between mb-[34px]">
           <div className="flex items-center gap-[14px]">
-            <img src="/assets/logo_tetada.jpeg" className="w-[48px] h-[48px] rounded-full object-cover bg-white" alt="Logo" />
+            <img src="/assets/logo_tetada.png" className="w-[48px] h-[48px] rounded-full object-cover bg-white" alt="Logo" />
             <div>
               <h2 className="text-[20px] font-bold mb-[4px]">TETADA IPB</h2>
               <p className="text-[13px] text-[#c4d5ea]">Tim Tanggap Darurat IPB</p>
