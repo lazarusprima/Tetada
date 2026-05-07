@@ -12,15 +12,6 @@ export default function Dashboard() {
   const [activities, setActivities] = useState<any[]>([]);
 
   useEffect(() => {
-    const updateClock = () => {
-      const now = new Date();
-      const h = String(now.getHours()).padStart(2, "0");
-      const m = String(now.getMinutes()).padStart(2, "0");
-      setTime(`${h}.${m} WIB`);
-    };
-    updateClock();
-    const interval = setInterval(updateClock, 1000);
-
     const fetchData = async () => {
       const { data } = await supabase
         .from('jadwal_distribusi')
@@ -28,30 +19,35 @@ export default function Dashboard() {
         .ilike('status', 'aktif')
         .order('tanggal_distribusi', { ascending: false })
         .limit(1)
-        .single();
-      
+        .maybeSingle();
+        
       if (data) {
-        // Cek apakah jadwal aktif ini adalah untuk hari ini
         const scheduleDate = new Date(data.tanggal_distribusi);
         const today = new Date();
-        
-        if (scheduleDate.getDate() === today.getDate() && 
-            scheduleDate.getMonth() === today.getMonth() && 
+        if (scheduleDate.getDate() === today.getDate() &&
+            scheduleDate.getMonth() === today.getMonth() &&
             scheduleDate.getFullYear() === today.getFullYear()) {
           setSchedule(data);
           setStock(data.stok_paket_sisa || 0);
           setMaxStock(data.stok_paket_total || 0);
+          
+          if (data.created_at) {
+            const d = new Date(data.created_at);
+            const h = String(d.getHours()).padStart(2, "0");
+            const m = String(d.getMinutes()).padStart(2, "0");
+            setTime(`${h}.${m} WIB`);
+          }
         } else {
           setStock(0);
           setMaxStock(0);
+          setTime('--.-- WIB');
         }
       }
 
-      // Fetch Recent Activities
       const { data: stokData } = await supabase
         .from('stok_buah_susu')
-        .select('jumlah, updated_at')
-        .order('updated_at', { ascending: false })
+        .select('jumlah, created_at')
+        .order('created_at', { ascending: false })
         .limit(3);
 
       const { data: jadwalData } = await supabase
@@ -61,16 +57,14 @@ export default function Dashboard() {
         .limit(3);
 
       let acts: any[] = [];
-      
       if (stokData) {
         stokData.forEach(item => {
           acts.push({
             text: `Admin update stok menjadi ${item.jumlah}`,
-            dateObj: new Date(item.updated_at)
+            dateObj: new Date(item.created_at)
           });
         });
       }
-      
       if (jadwalData) {
         jadwalData.forEach(item => {
           acts.push({
@@ -81,7 +75,6 @@ export default function Dashboard() {
       }
 
       acts.sort((a, b) => b.dateObj.getTime() - a.dateObj.getTime());
-      
       const formattedActs = acts.slice(0, 3).map(act => {
         const d = act.dateObj;
         const h = String(d.getHours()).padStart(2, "0");
@@ -98,8 +91,6 @@ export default function Dashboard() {
       setActivities(formattedActs);
     };
     fetchData();
-
-    return () => clearInterval(interval);
   }, []);
 
   const percent = maxStock > 0 ? (stock / maxStock) * 100 : 0;
@@ -130,7 +121,6 @@ export default function Dashboard() {
             <h4 className="text-[15px] mb-[18px] font-bold">STOK PAKET TERSISA</h4>
             <h1 className="text-[72px] md:text-[96px] leading-none mb-[10px] font-extrabold">{stock}</h1>
             <p className="text-[#9db3cb] mb-[16px]">dari {maxStock} paket total</p>
-            
             <div className="h-[10px] bg-white/12 rounded-[30px] overflow-hidden mb-[16px]">
               <span className="block h-full bg-[#9dd7d7] rounded-[30px] transition-all duration-500 ease-out" style={{ width: `${percent}%` }}></span>
             </div>
@@ -139,7 +129,6 @@ export default function Dashboard() {
 
           <div className="bg-white dark:bg-[#233554] p-[24px] rounded-[18px] shadow-md transition-colors duration-300">
             <h3 className="text-[32px] font-bold mb-[18px] dark:text-[#ccd6f6]">Jadwal Distribusi Hari Ini</h3>
-            
             {schedule ? (
               <>
                 <div className="flex justify-between py-[16px] border-b border-[#edf1f6] dark:border-[#112240]">

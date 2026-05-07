@@ -11,11 +11,7 @@ export default function Footer() {
   return (
     <footer className="bg-[#031F41] text-white">
       <div className="w-[92%] max-w-[1280px] mx-auto py-[48px]">
-        
-        {/* Top grid */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_auto] gap-[48px] pb-[32px]">
-          
-          {/* Brand */}
           <div className="max-w-[448px]">
             <h3 className="text-[18px] font-semibold mb-[14px]">TETADA IPB</h3>
             <p className="text-[14px] leading-[23px] text-[rgba(168,218,220,0.6)]">
@@ -23,7 +19,6 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Resources */}
           <div className="min-w-[200px]">
             <h4 className="text-[14px] font-semibold tracking-[1.4px] uppercase mb-[16px]">Resources</h4>
             <div className="flex flex-col gap-[8px]">
@@ -46,12 +41,9 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Our Contact */}
           <div className="min-w-[220px]">
             <h4 className="text-[14px] font-semibold tracking-[1.4px] uppercase mb-[16px]">Our Contact</h4>
             <div className="flex flex-col gap-[12px]">
-              
-              {/* Instagram */}
               <a
                 href="https://www.instagram.com/tetadaipb/"
                 target="_blank"
@@ -66,7 +58,6 @@ export default function Footer() {
                 @tetadaipb
               </a>
 
-              {/* WhatsApp */}
               <a
                 href="https://www.whatsapp.com/channel/0029Vat6bu4K0IBfgco5nC3f"
                 target="_blank"
@@ -79,7 +70,6 @@ export default function Footer() {
                 Saluran WhatsApp TETADA
               </a>
 
-              {/* TikTok */}
               <a
                 href="https://www.tiktok.com/@timtanggapdarurat_ipb"
                 target="_blank"
@@ -96,7 +86,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Divider + copyright */}
         <div className="border-t border-white/[0.05] pt-[32px] flex flex-col sm:flex-row justify-between items-center gap-[16px]">
           <p className="text-[12px] text-[rgba(168,218,220,0.4)]">© {new Date().getFullYear()} TETADA IPB. All rights reserved.</p>
           <div className="flex items-center gap-[24px]">

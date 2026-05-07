@@ -7,7 +7,6 @@ export default function BuahSusu() {
   const [time, setTime] = useState('');
   const [showTimeline, setShowTimeline] = useState(false);
   const timelineRef = useRef<HTMLElement>(null);
-  
   const [buahStock, setBuahStock] = useState(0);
   const [buahMaxStock, setBuahMaxStock] = useState(0);
   const [schedule, setSchedule] = useState<any>(null);
@@ -15,32 +14,39 @@ export default function BuahSusu() {
   const percent = buahMaxStock > 0 ? Math.round((buahStock / buahMaxStock) * 100) : 0;
 
   useEffect(() => {
-    const updateClock = () => {
-      const now = new Date();
-      const h = String(now.getHours()).padStart(2, "0");
-      const m = String(now.getMinutes()).padStart(2, "0");
-      const s = String(now.getSeconds()).padStart(2, "0");
-      setTime(`${h}:${m}:${s} WIB`);
-    };
-    updateClock();
-    const interval = setInterval(updateClock, 1000);
-
     const fetchStok = async () => {
       const now = new Date();
       const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-      const { data } = await supabase.from('jadwal_distribusi').select('stok_paket_sisa, stok_paket_total').eq('tanggal_distribusi', todayStr).gt('stok_paket_sisa', 0).order('tanggal_distribusi', { ascending: false }).limit(1).single();
+      const { data } = await supabase
+        .from('jadwal_distribusi')
+        .select('stok_paket_sisa, stok_paket_total, created_at')
+        .eq('tanggal_distribusi', todayStr)
+        .gt('stok_paket_sisa', 0)
+        .order('tanggal_distribusi', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+        
       if (data) {
         setBuahStock(data.stok_paket_sisa || 0);
         setBuahMaxStock(data.stok_paket_total || 0);
+        
+        if (data.created_at) {
+          const d = new Date(data.created_at);
+          const h = String(d.getHours()).padStart(2, "0");
+          const m = String(d.getMinutes()).padStart(2, "0");
+          const s = String(d.getSeconds()).padStart(2, "0");
+          setTime(`${h}:${m}:${s} WIB`);
+        }
       } else {
         setBuahStock(0);
         setBuahMaxStock(0);
+        setTime('--:--:-- WIB');
       }
     };
 
     const fetchSchedule = async () => {
       const today = new Date().toISOString().split('T')[0];
-      const { data } = await supabase.from('jadwal_distribusi').select('*').gte('tanggal_distribusi', today).order('tanggal_distribusi', { ascending: true }).limit(1).single();
+      const { data } = await supabase.from('jadwal_distribusi').select('*').gte('tanggal_distribusi', today).order('tanggal_distribusi', { ascending: true }).limit(1).maybeSingle();
       if (data) {
         setSchedule(data);
       }
@@ -62,15 +68,13 @@ export default function BuahSusu() {
     }
 
     return () => {
-      clearInterval(interval);
       observer.disconnect();
     };
   }, []);
 
   return (
     <>
-      
-      <section 
+      <section
         className="py-[70px] text-center text-white bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `linear-gradient(rgba(6,36,77,.84),rgba(6,36,77,.88)), url('/assets/buah_susu.jpg')` }}
       >
@@ -82,35 +86,28 @@ export default function BuahSusu() {
         </div>
       </section>
 
-      
       <section className="py-[50px]">
         <div className="w-[92%] max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-[30px]">
-          
-          
           <div className="bg-[#082f5d] text-white p-[34px] rounded-[24px] shadow-[0_10px_24px_rgba(0,0,0,.05)]">
             <h5 className="font-bold mb-[10px]">STOK PAKET TERSISA</h5>
             <div className="text-[60px] md:text-[92px] font-extrabold leading-none mb-[10px]">
               {buahStock}
             </div>
             <p className="text-[#d7e8f8] mb-[18px]">dari {buahMaxStock} paket total</p>
-            
             <div className="h-[12px] bg-white/15 rounded-full overflow-hidden mb-[18px]">
-              <span 
+              <span
                 className="block h-full bg-[#22c55e] transition-all duration-1000"
                 style={{ width: `${percent}%` }}
               ></span>
             </div>
-            
             <div className="flex justify-between text-[14px]">
               <div>Terakhir diperbarui:</div>
               <div className="font-bold">{time}</div>
             </div>
           </div>
 
-          
           <div className="bg-white dark:bg-[#112240] p-[34px] rounded-[24px] shadow-[0_10px_24px_rgba(0,0,0,.05)] text-[#08284d] dark:text-[#ccd6f6] transition-colors duration-300">
             <h3 className="text-[28px] md:text-[36px] font-bold mb-[26px]">Jadwal Distribusi Berikutnya</h3>
-            
             {schedule ? (
               <>
                 <div className="flex justify-between py-[14px] border-b border-[#edf2f7] dark:border-[#233554]">
@@ -131,7 +128,6 @@ export default function BuahSusu() {
                 Belum ada jadwal distribusi terdekat.
               </div>
             )}
-            
             <div className="flex justify-between py-[14px] border-b border-[#edf2f7] dark:border-[#233554]">
               <span className="text-[#718096] dark:text-[#8892b0]">Syarat</span>
               <b className="font-bold">KTM / e-KTM Aktif</b>
@@ -145,17 +141,14 @@ export default function BuahSusu() {
         </div>
       </section>
 
-      
       <section ref={timelineRef} className="py-[90px] text-center">
         <div className="w-[92%] max-w-[1600px] mx-auto">
           <small className="block text-[15px] tracking-[3px] font-bold text-[#5d7794] mb-[14px]">OPERATIONAL PROTOCOL</small>
           <h2 className="text-[40px] md:text-[58px] font-bold mb-[70px]">Panduan Antrean</h2>
 
           <div className="relative grid grid-cols-1 lg:grid-cols-[1fr_80px_1fr] gap-y-[28px] items-center max-w-[1300px] mx-auto">
-            
             <div className="hidden lg:block absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[2px] bg-[#d8e1ea]"></div>
 
-            
             {[
               { id: 1, icon: 'fa-ticket', title: '01. Ambil Nomor Antrean', desc: 'Dapatkan nomor antrean di area pembagian.', pos: 'left' },
               { id: 2, icon: 'fa-box-open', title: '02. Tunggu Sampai Paket Siap Dibagikan', desc: 'Silakan menunggu di dekat area pembagian.', pos: 'right' },
@@ -169,31 +162,29 @@ export default function BuahSusu() {
               { id: 10, icon: 'fa-right-from-bracket', title: '10. Silakan Melanjutkan Aktivitas', desc: 'Ikuti tanda panah keluar untuk menghindari bentrokan arus antrean.', pos: 'right', isLast: true },
             ].map((step, idx) => (
               <div key={step.id} className="contents">
+                <div className={`lg:hidden w-[40px] h-[40px] rounded-full text-white flex items-center justify-center font-bold text-[16px] mx-auto z-20 transition-all duration-700 ${step.isLast ? 'bg-[#3d7c83]' : 'bg-[#08284d]'} ${showTimeline ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} style={{ transitionDelay: `${idx * 70}ms` }}>
+                  {step.id}
+                </div>
+
                 {step.pos === 'right' && (
-                  <>
-                    <div className={`hidden lg:flex text-[34px] text-[#d8d8d8] dark:text-[#334155] justify-center transition-all duration-700 hover:text-[#08284d] dark:hover:text-white hover:scale-110 ${showTimeline ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} style={{ transitionDelay: `${idx * 70}ms` }}>
-                      <i className={`fa-solid ${step.icon}`}></i>
-                    </div>
-                    <div className={`col-start-1 lg:col-start-2 w-[52px] h-[52px] rounded-full text-white flex items-center justify-center font-bold text-[18px] mx-auto z-20 transition-all duration-700 ${step.isLast ? 'bg-[#3d7c83] dark:bg-[#2dd4bf]' : 'bg-[#08284d] dark:bg-[#3b82f6]'} ${showTimeline ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} style={{ transitionDelay: `${idx * 70}ms` }}>
-                      {step.id}
-                    </div>
-                  </>
+                  <div className={`hidden lg:flex text-[34px] text-[#d8d8d8] dark:text-[#334155] justify-center transition-all duration-700 hover:text-[#08284d] dark:hover:text-white hover:scale-110 ${showTimeline ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} style={{ transitionDelay: `${idx * 70}ms` }}>
+                    <i className={`fa-solid ${step.icon}`}></i>
+                  </div>
                 )}
 
-                <div className={`col-start-1 ${step.pos === 'left' ? 'lg:col-start-1 lg:text-left' : 'lg:col-start-3 lg:text-left'} text-center bg-white dark:bg-[#112240] p-[26px] rounded-[18px] shadow-[0_10px_24px_rgba(0,0,0,.05)] relative z-10 transition-all duration-700 ${showTimeline ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} style={{ transitionDelay: `${idx * 70}ms` }}>
+                <div className={`hidden lg:flex col-start-2 w-[52px] h-[52px] rounded-full text-white items-center justify-center font-bold text-[18px] mx-auto z-20 transition-all duration-700 ${step.isLast ? 'bg-[#3d7c83] dark:bg-[#2dd4bf]' : 'bg-[#08284d] dark:bg-[#3b82f6]'} ${showTimeline ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} style={{ transitionDelay: `${idx * 70}ms` }}>
+                  {step.id}
+                </div>
+
+                <div className={`col-start-1 ${step.pos === 'left' ? 'lg:col-start-1 lg:text-right' : 'lg:col-start-3 lg:text-left'} text-center bg-white dark:bg-[#112240] p-[26px] rounded-[18px] shadow-[0_10px_24px_rgba(0,0,0,.05)] relative z-10 transition-all duration-700 ${showTimeline ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} style={{ transitionDelay: `${idx * 70}ms` }}>
                   <h3 className="text-[20px] md:text-[22px] font-bold mb-[8px] dark:text-[#e2e8f0]">{step.title}</h3>
                   <p className="text-[15px] leading-[1.6] text-[#6b7280] dark:text-[#94a3b8]">{step.desc}</p>
                 </div>
 
                 {step.pos === 'left' && (
-                  <>
-                    <div className={`hidden lg:flex col-start-2 w-[52px] h-[52px] rounded-full text-white items-center justify-center font-bold text-[18px] mx-auto z-20 transition-all duration-700 ${step.isLast ? 'bg-[#3d7c83] dark:bg-[#2dd4bf]' : 'bg-[#08284d] dark:bg-[#3b82f6]'} ${showTimeline ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} style={{ transitionDelay: `${idx * 70}ms` }}>
-                      {step.id}
-                    </div>
-                    <div className={`hidden lg:flex col-start-3 text-[34px] text-[#d8d8d8] dark:text-[#334155] justify-center transition-all duration-700 hover:text-[#08284d] dark:hover:text-white hover:scale-110 ${showTimeline ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} style={{ transitionDelay: `${idx * 70}ms` }}>
-                      <i className={`fa-solid ${step.icon}`}></i>
-                    </div>
-                  </>
+                  <div className={`hidden lg:flex col-start-3 text-[34px] text-[#d8d8d8] dark:text-[#334155] justify-center transition-all duration-700 hover:text-[#08284d] dark:hover:text-white hover:scale-110 ${showTimeline ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} style={{ transitionDelay: `${idx * 70}ms` }}>
+                    <i className={`fa-solid ${step.icon}`}></i>
+                  </div>
                 )}
               </div>
             ))}

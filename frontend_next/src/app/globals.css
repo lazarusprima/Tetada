@@ -5,6 +5,11 @@
   --foreground: #171717;
 }
 
+html {
+  /* Global scale adjustment to make everything feel ~5% smaller */
+  zoom: 0.95;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

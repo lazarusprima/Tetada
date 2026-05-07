@@ -47,7 +47,7 @@ export default function AdminStokPage() {
       .eq('tanggal_distribusi', todayStr)
       .order('tanggal_distribusi', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
     if (data) {
       setStock(data.stok_paket_sisa || 0);
       setMaxStock(data.stok_paket_total || 0);
@@ -90,7 +90,6 @@ export default function AdminStokPage() {
     const newStock = stock + amount;
     if (newStock < 0 || newStock > maxStock) return;
 
-    // Optimistic UI update
     setStock(newStock);
     setSchedules(prev => prev.map(s => s.id === activeScheduleId ? { ...s, stok_paket_sisa: newStock } : s));
 
@@ -120,67 +119,59 @@ export default function AdminStokPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_200px] xl:grid-cols-[1fr_260px] gap-[31px]">
-
-        {/* Big Card: Stok */}
-        <div className="bg-[#031F41] text-[#F1FAEE] rounded-[20px] p-[28px_34px] relative overflow-hidden shadow-lg flex flex-col justify-center">
-          <h4 className="text-[13px] font-bold mb-[18px] tracking-[0.5px]">STOK PAKET TERSISA</h4>
-
-          <div className="relative mb-[12px]">
-            <div className="text-[72px] md:text-[96px] font-bold leading-none">{stock}</div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[24px]">
+        <div className="sm:col-span-2 bg-[#031F41] dark:bg-[#112240] text-white rounded-[24px] p-[32px] shadow-lg flex flex-col justify-center relative overflow-hidden min-h-[220px]">
+          <h4 className="text-[13px] font-bold text-white/60 mb-[20px] uppercase tracking-[1px]">STOK PAKET TERSISA</h4>
+          <div className="flex items-center gap-[30px] mb-[20px]">
+            <div className="text-[72px] md:text-[92px] font-bold leading-none">{stock}</div>
             {activeScheduleId && (
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col gap-[8px]">
+              <div className="flex flex-col gap-[8px]">
                 <button
                   onClick={() => updateStock(1)}
                   disabled={stock >= maxStock}
-                  className="w-[38px] h-[38px] bg-white/15 hover:bg-white/25 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold text-[22px] rounded-[10px] flex items-center justify-center transition-all"
-                >+</button>
+                  className="w-[44px] h-[44px] bg-white/10 hover:bg-white/20 disabled:opacity-20 text-white rounded-[12px] flex items-center justify-center transition-all border border-white/5"
+                ><i className="fa-solid fa-plus"></i></button>
                 <button
                   onClick={() => updateStock(-1)}
                   disabled={stock <= 0}
-                  className="w-[38px] h-[38px] bg-white/15 hover:bg-white/25 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold text-[22px] rounded-[10px] flex items-center justify-center transition-all"
-                >-</button>
+                  className="w-[44px] h-[44px] bg-white/10 hover:bg-white/20 disabled:opacity-20 text-white rounded-[12px] flex items-center justify-center transition-all border border-white/5"
+                ><i className="fa-solid fa-minus"></i></button>
               </div>
             )}
           </div>
-
-          <p className="text-[15px] text-white/55 mb-[24px]">dari {maxStock} paket total</p>
-
-          <div className="h-[10px] bg-white/15 rounded-full overflow-hidden mb-[18px]">
-            <div className="h-full bg-[#9dd7d7] rounded-full transition-all duration-500" style={{ width: `${maxStock > 0 ? (stock / maxStock) * 100 : 0}%` }}></div>
+          <p className="text-[15px] text-white/50 mb-[20px]">dari <span className="text-white font-bold">{maxStock}</span> paket total hari ini</p>
+          <div className="h-[8px] bg-white/10 rounded-full overflow-hidden">
+            <div className="h-full bg-[#38a169] rounded-full transition-all duration-700" style={{ width: `${maxStock > 0 ? (stock / maxStock) * 100 : 0}%` }}></div>
           </div>
-
-          <p className="text-[13px] text-white/70">
-            {activeScheduleId ? 'Klik +/- untuk update stok langsung' : 'Tidak ada jadwal aktif hari ini'}
-          </p>
+          <div className="mt-[20px] text-[12px] text-white/40 italic">
+            {activeScheduleId ? '⚡ Update stok langsung via tombol di atas' : '⚠ Tidak ada jadwal distribusi aktif saat ini'}
+          </div>
         </div>
 
-        {/* Big Card: Total Distribusi */}
-        <div className="bg-[#031F41] text-[#F1FAEE] rounded-[20px] p-[28px_20px] relative shadow-lg flex flex-col items-center justify-center">
-          <h4 className="text-[15px] font-bold text-center mb-[20px]">TOTAL DISTRIBUSI</h4>
-          <div className="flex items-end justify-center gap-[10px] mb-[30px]">
-            <div className="text-[72px] md:text-[96px] font-bold leading-none">{totalDistribusi}</div>
-            <div className="text-[18px] font-bold pb-[14px]">Hari</div>
+        <div className="bg-[#031F41] dark:bg-[#112240] text-white rounded-[24px] p-[32px] shadow-lg flex flex-col items-center justify-center text-center min-h-[220px]">
+          <h4 className="text-[13px] font-bold text-white/60 mb-[24px] uppercase tracking-[1px]">TOTAL DISTRIBUSI</h4>
+          <div className="flex items-baseline gap-[8px] mb-[12px]">
+            <span className="text-[72px] md:text-[92px] font-bold leading-none">{totalDistribusi}</span>
+            <span className="text-[18px] font-bold text-white/60">Hari</span>
           </div>
-          <p className="text-[13px] text-white/55 text-center mt-auto">Sejak Mei 2026</p>
+          <p className="text-[13px] text-white/40 mt-auto">Aktif sejak Mei 2026</p>
         </div>
 
       </div>
 
-      {/* Table */}
-      <div className="bg-white dark:bg-[#112240] rounded-[16px] border border-[#E2E8F0] dark:border-[#233554] shadow-sm overflow-hidden flex flex-col relative">
+      <div className="bg-white dark:bg-[#112240] rounded-[24px] border border-[#E2E8F0] dark:border-[#233554] shadow-sm overflow-hidden flex flex-col mt-[16px]">
 
-        <div className="p-[20px_24px] border-b border-[#E2E8F0] dark:border-[#233554] flex flex-col md:flex-row justify-between items-center gap-[16px]">
-          <h3 className="text-[#1D3557] dark:text-white font-bold text-[16px] md:text-[18px] self-start md:self-center">Daftar Jadwal Distribusi</h3>
-          <div className="flex flex-col sm:flex-row gap-[12px] w-full md:w-auto">
-            <div className="relative flex-1 sm:w-[260px]">
+        <div className="p-[20px] md:p-[28px_32px] border-b border-[#E2E8F0] dark:border-[#233554] flex flex-col md:flex-row justify-between items-center gap-[20px] md:gap-[24px]">
+          <h3 className="text-[#1D3557] dark:text-white font-bold text-[18px] self-start md:self-center">Daftar Jadwal Distribusi</h3>
+          <div className="flex flex-col sm:flex-row gap-[16px] w-full md:w-auto">
+            <div className="relative flex-1 w-full sm:w-[320px]">
               <span className="absolute left-[14px] top-1/2 -translate-y-1/2 text-[#A0AEC0] text-[13px]">
                 <i className="fa-solid fa-magnifying-glass"></i>
               </span>
               <input
                 type="text"
-                placeholder="Cari jadwal..."
-                className="w-full bg-[#F0F2F5] dark:bg-[#0a192f] border border-[#E2E8F0] dark:border-[#233554] rounded-[8px] pl-[36px] pr-[16px] py-[10px] text-[13px] text-[#1D3557] dark:text-white focus:outline-none focus:border-blue-500 transition-colors"
+                placeholder="🔍 Cari jadwal..."
+                className="w-full bg-[#F0F2F5] dark:bg-[#0a192f] border border-[#E2E8F0] dark:border-[#233554] rounded-[8px] px-[16px] py-[10px] text-[11.3px] text-[#A0AEC0] dark:text-white focus:outline-none focus:border-blue-500 transition-colors"
               />
             </div>
             <Link
@@ -193,56 +184,56 @@ export default function AdminStokPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[800px]">
+          <table className="w-full text-left border-collapse min-w-[1000px]">
             <thead>
               <tr className="bg-[#F8FAFC] dark:bg-[#020c1b] border-b border-[#E2E8F0] dark:border-[#233554]">
-                <th className="py-[16px] px-[24px] text-[11px] font-bold text-[#718096] uppercase tracking-[0.5px]">TANGGAL</th>
-                <th className="py-[16px] px-[24px] text-[11px] font-bold text-[#718096] uppercase tracking-[0.5px]">LOKASI</th>
-                <th className="py-[16px] px-[24px] text-[11px] font-bold text-[#718096] uppercase tracking-[0.5px]">WAKTU</th>
-                <th className="py-[16px] px-[24px] text-[11px] font-bold text-[#718096] uppercase tracking-[0.5px]">STOK</th>
-                <th className="py-[16px] px-[24px] text-[11px] font-bold text-[#718096] uppercase tracking-[0.5px]">STATUS</th>
-                <th className="py-[16px] px-[24px] text-[11px] font-bold text-[#718096] uppercase tracking-[0.5px] w-[140px]">AKSI</th>
+                <th className="py-[16px] px-[24px] text-[10.3px] font-bold text-[#718096] dark:text-[#a0aec0] uppercase tracking-[0.5px]">TANGGAL</th>
+                <th className="py-[16px] px-[24px] text-[10.3px] font-bold text-[#718096] dark:text-[#a0aec0] uppercase tracking-[0.5px]">LOKASI</th>
+                <th className="py-[16px] px-[24px] text-[10.3px] font-bold text-[#718096] dark:text-[#a0aec0] uppercase tracking-[0.5px]">WAKTU</th>
+                <th className="py-[16px] px-[24px] text-[10.3px] font-bold text-[#718096] dark:text-[#a0aec0] uppercase tracking-[0.5px]">STOK</th>
+                <th className="py-[16px] px-[24px] text-[10.3px] font-bold text-[#718096] dark:text-[#a0aec0] uppercase tracking-[0.5px]">STATUS</th>
+                <th className="py-[16px] px-[24px] text-[10.3px] font-bold text-[#718096] dark:text-[#a0aec0] uppercase tracking-[0.5px] w-[140px]">AKSI</th>
               </tr>
             </thead>
             <tbody>
               {schedules.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="text-center py-[20px] text-[#718096] dark:text-[#8892b0]">Belum ada data jadwal.</td>
+                  <td colSpan={6} className="text-center py-[60px] text-[#718096] dark:text-[#8892b0]">Belum ada data jadwal.</td>
                 </tr>
               )}
               {schedules.map((s) => {
                 const status = getAutoStatus(s.tanggal_distribusi, s.stok_paket_sisa);
                 const scheduleDate = new Date(s.tanggal_distribusi);
                 return (
-                  <tr key={s.id} className="border-b border-[#E2E8F0] dark:border-[#233554] hover:bg-gray-50 dark:hover:bg-[#1e2d4a] transition-colors">
-                    <td className="py-[18px] px-[24px]">
-                      <div className="text-[14px] font-bold text-[#1D3557] dark:text-[#ccd6f6]">{scheduleDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                  <tr key={s.id} className="border-b border-[#E2E8F0] dark:border-[#233554] hover:bg-gray-50/50 dark:hover:bg-[#1e2d4a]/50 transition-colors">
+                    <td className="py-[20px] px-[24px]">
+                      <div className="text-[12.2px] font-bold text-[#1D3557] dark:text-white/90">{scheduleDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
                     </td>
-                    <td className="py-[18px] px-[24px]">
-                      <div className="text-[13px] text-[#4A5568] dark:text-[#8892b0]">{s.lokasi}</div>
+                    <td className="py-[20px] px-[24px]">
+                      <div className="text-[12.2px] text-[#718096] dark:text-[#a0aec0]">{s.lokasi}</div>
                     </td>
-                    <td className="py-[18px] px-[24px]">
-                      <div className="text-[13px] text-[#4A5568] dark:text-[#8892b0]">{s.waktu ? s.waktu.substring(0, 5) : ''}</div>
+                    <td className="py-[20px] px-[24px]">
+                      <div className="text-[12.2px] text-[#4A5568] dark:text-[#8892b0]">{s.waktu ? s.waktu.substring(0, 5) : ''}</div>
                     </td>
-                    <td className="py-[18px] px-[24px]">
-                      <div className="text-[13px] text-[#718096] dark:text-[#8892b0]">{s.stok_paket_sisa} / {s.stok_paket_total}</div>
+                    <td className="py-[20px] px-[24px]">
+                      <div className="text-[12.2px] text-[#718096] dark:text-[#8892b0]">{s.stok_paket_sisa} / {s.stok_paket_total}</div>
                     </td>
-                    <td className="py-[18px] px-[24px]">
-                      <div className={`inline-block text-[11px] font-bold px-[12px] py-[6px] rounded-[6px] ${status === 'Selesai' ? 'bg-[#E2E8F0] dark:bg-[#233554] text-[#718096] dark:text-[#ccd6f6]' : (status === 'Aktif' ? 'bg-[#d8fff0] text-[#15803d]' : 'bg-[#e0f2fe] text-[#0369a1]')}`}>
+                    <td className="py-[20px] px-[24px]">
+                      <div className={`inline-block text-[10.3px] font-bold px-[12px] py-[6px] rounded-[50px] text-center min-w-[68px] ${status === 'Selesai' ? 'bg-[#F0F2F5] text-[#718096]' : (status === 'Aktif' ? 'bg-[#d8fff0] text-[#15803d]' : 'bg-[#e0f2fe] text-[#0369a1]')}`}>
                         {status}
                       </div>
                     </td>
-                    <td className="py-[18px] px-[24px]">
+                    <td className="py-[20px] px-[24px]">
                       <div className="flex items-center gap-[8px]">
                         <Link
                           href={`/admin/stok/buahedit?id=${s.id}`}
-                          className="bg-[#EBF8FF] dark:bg-[#1a365d] text-[#2B6CB0] dark:text-[#63b3ed] text-[11px] font-bold px-[12px] py-[6px] rounded-[6px] hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors flex items-center justify-center"
+                          className="bg-[#EBF8FF] dark:bg-[#1a365d] text-[#2B6CB0] dark:text-[#63b3ed] text-[10.3px] font-bold px-[12px] py-[6px] rounded-[50px] hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors text-center min-w-[57px]"
                         >
                           Edit
                         </Link>
                         <button
                           onClick={() => openDeleteModal(s)}
-                          className="bg-[#FFF5F5] dark:bg-[#742a2a] text-[#C53030] dark:text-[#fc8181] text-[11px] font-bold px-[12px] py-[6px] rounded-[6px] hover:bg-red-100 dark:hover:bg-red-900 transition-colors"
+                          className="bg-[#FFF5F5] dark:bg-[#742a2a] text-[#C53030] dark:text-[#fc8181] text-[10.3px] font-bold px-[12px] py-[6px] rounded-[50px] hover:bg-red-100 dark:hover:bg-red-900 transition-colors text-center min-w-[57px]"
                         >
                           Hapus
                         </button>
@@ -255,14 +246,13 @@ export default function AdminStokPage() {
           </table>
         </div>
 
-        <div className="p-[16px_24px] flex justify-between items-center text-[12px] text-[#718096] dark:text-[#8892b0]">
+        <div className="p-[28px_32px] border-t border-[#E2E8F0] dark:border-[#233554] flex justify-between items-center text-[11.3px] text-[#718096] dark:text-[#a0aec0]">
           <div>Menampilkan {schedules.length} dari {schedules.length} data</div>
-          <div className="bg-[#031F41] text-white w-[26px] h-[26px] flex items-center justify-center rounded-[6px] font-bold cursor-pointer hover:bg-[#102F77]">1</div>
+          <div className="bg-[#1D3557] text-white w-[34px] h-[31px] flex items-center justify-center rounded-[6px] font-bold cursor-pointer hover:bg-[#031F41] transition-colors">1</div>
         </div>
 
       </div>
 
-      {/* Delete Modal */}
       {isDeleteModalOpen && selectedSchedule && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="relative w-full max-w-[560px] bg-white dark:bg-[#112240] rounded-[12px] border-[1.5px] border-[#E2E8F0] dark:border-[#233554] shadow-2xl p-[36px_24px_32px] flex flex-col items-center">
