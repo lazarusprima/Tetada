@@ -229,7 +229,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Link href="/admin/archive" onClick={() => setIsSidebarOpen(false)} className={`no-underline p-[14px_16px] rounded-[14px] font-semibold flex items-center gap-[12px] transition duration-200 ${pathname.startsWith('/admin/archive') ? 'bg-[#173f97] text-white' : 'text-[#7ea2c8] hover:bg-[#0c3470] hover:text-white'}`}>
             <i className="fa-regular fa-folder w-[20px]"></i> ARCHIVE
           </Link>
-          <Link href="/admin/reports" onClick={() => setIsSidebarOpen(false)} className={`no-underline p-[14px_16px] rounded-[14px] font-semibold flex items-center gap-[12px] transition duration-200 ${pathname.startsWith('/admin/reports') ? 'bg-[#173f97] text-white' : 'text-[#7ea2c8] hover:bg-[#0c3470] hover:text-white'}`}>
+          <Link href="/admin/contact" onClick={() => setIsSidebarOpen(false)} className={`no-underline p-[14px_16px] rounded-[14px] font-semibold flex items-center gap-[12px] transition duration-200 ${pathname.startsWith('/admin/contact') ? 'bg-[#173f97] text-white' : 'text-[#7ea2c8] hover:bg-[#0c3470] hover:text-white'}`}>
             <i className="fa-solid fa-snowflake w-[20px]"></i> EMERGENCY REPORTS
           </Link>
         </nav>

@@ -1,13 +1,17 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 
-export default function CreateArchivePage() {
+export default function EditArchivePage() {
   const router = useRouter();
+  const params = useParams();
+  const id = params.id as string;
+
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -21,6 +25,43 @@ export default function CreateArchivePage() {
     category: '',
     image_url: ''
   });
+
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchArchiveData = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('archive_kegiatan')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+
+        if (data) {
+          setFormData({
+            title: data.title || '',
+            year: data.year || new Date().getFullYear(),
+            date_month: data.date_month || '',
+            description: data.description || '',
+            category: data.category || 'UMUM',
+            image_url: data.image_url || ''
+          });
+          if (data.image_url) {
+            setPreviewUrl(data.image_url);
+          }
+        }
+      } catch (error: any) {
+        console.error('Error fetching data:', error);
+        alert('Gagal mengambil data kegiatan: ' + error.message);
+      } finally {
+        setFetching(false);
+      }
+    };
+
+    fetchArchiveData();
+  }, [id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -111,25 +152,34 @@ export default function CreateArchivePage() {
     try {
       const { error } = await supabase
         .from('archive_kegiatan')
-        .insert([{
+        .update({
           title: formData.title,
           description: formData.description,
           category: formData.category || 'UMUM',
           year: formData.year,
           image_url: formData.image_url
-        }]);
+        })
+        .eq('id', id);
 
       if (error) throw error;
       
-      alert('Kegiatan berhasil ditambahkan!');
+      alert('Kegiatan berhasil diperbarui!');
       router.push('/admin/archive');
     } catch (error: any) {
       console.error('Error saving data:', error);
-      alert('Gagal menyimpan kegiatan: ' + error.message);
+      alert('Gagal memperbarui kegiatan: ' + error.message);
     } finally {
       setLoading(false);
     }
   };
+
+  if (fetching) {
+    return (
+      <div className="flex justify-center items-center h-[300px]">
+        <div className="w-[40px] h-[40px] border-[3px] border-[#E2E8F0] dark:border-[#233554] border-t-[#2B6CB0] dark:border-t-blue-500 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-[32px] w-full max-w-[1047px] mx-auto pb-[50px]">
@@ -137,10 +187,10 @@ export default function CreateArchivePage() {
       <div className="flex justify-between items-center w-full">
         <div className="flex flex-col gap-[8px]">
           <h1 className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[22px] leading-[28px] text-[#1D3557] dark:text-white transition-colors">
-            Tambah Kegiatan
+            Edit Kegiatan
           </h1>
           <p className="font-['Plus_Jakarta_Sans',sans-serif] text-[13px] leading-[16px] text-[#457B9D] dark:text-[#93c5fd] transition-colors">
-            Isi informasi kegiatan yang ingin didokumentasikan
+            Ubah informasi dokumentasi kegiatan
           </p>
         </div>
         
@@ -252,7 +302,7 @@ export default function CreateArchivePage() {
           <div className="flex flex-col gap-[8px]">
             <label className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[11px] leading-[14px] text-[#4A5568] dark:text-gray-300 flex justify-between">
               <span>Ringkasan Kegiatan *</span>
-              <span className="font-normal text-[#A0AEC0]">{formData.description.length} / 750 karakter</span>
+              <span className="font-normal text-[#A0AEC0]">{formData.description?.length || 0} / 750 karakter</span>
             </label>
             <textarea 
               name="description"
@@ -390,7 +440,7 @@ export default function CreateArchivePage() {
             disabled={loading || uploading}
             className="flex items-center justify-center bg-[#222375] dark:bg-[#173f97] rounded-[8px] w-[168px] h-[48px] font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[13px] text-white hover:bg-[#10114a] dark:hover:bg-[#1e4eb8] transition-colors disabled:opacity-50"
           >
-            {loading ? 'Menyimpan...' : 'Simpan Kegiatan'}
+            {loading ? 'Menyimpan...' : 'Simpan Perubahan'}
           </button>
         </div>
       </form>

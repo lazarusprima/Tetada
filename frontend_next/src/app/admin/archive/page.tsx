@@ -14,22 +14,41 @@ interface ArchiveItem {
   link_url?: string;
 }
 
+const SkeletonRow = () => (
+  <tr className="animate-pulse border-b border-[#E2E8F0] dark:border-[#233554]">
+    <td className="py-[16px] px-[24px]">
+      <div className="h-[20px] bg-gray-200 dark:bg-[#1a2b4c] rounded w-3/4 mb-2"></div>
+      <div className="h-[16px] bg-gray-200 dark:bg-[#1a2b4c] rounded w-1/2"></div>
+    </td>
+    <td className="py-[16px] px-[24px]">
+      <div className="h-[16px] bg-gray-200 dark:bg-[#1a2b4c] rounded w-full mb-2"></div>
+      <div className="h-[16px] bg-gray-200 dark:bg-[#1a2b4c] rounded w-2/3"></div>
+    </td>
+    <td className="py-[16px] px-[24px]">
+      <div className="h-[20px] bg-gray-200 dark:bg-[#1a2b4c] rounded w-12"></div>
+    </td>
+    <td className="py-[16px] px-[24px]">
+      <div className="w-[40px] h-[40px] bg-gray-200 dark:bg-[#1a2b4c] rounded-lg"></div>
+    </td>
+    <td className="py-[16px] px-[24px]">
+      <div className="flex gap-2 justify-center">
+        <div className="h-[28px] w-[50px] bg-gray-200 dark:bg-[#1a2b4c] rounded-full"></div>
+        <div className="h-[28px] w-[60px] bg-gray-200 dark:bg-[#1a2b4c] rounded-full"></div>
+      </div>
+    </td>
+  </tr>
+);
+
 export default function AdminArchive() {
   const [archives, setArchives] = useState<ArchiveItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<ArchiveItem | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    category: '',
-    year: new Date().getFullYear(),
-    image_url: '',
-    link_url: ''
-  });
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchArchives = async () => {
     setLoading(true);
@@ -50,87 +69,23 @@ export default function AdminArchive() {
     fetchArchives();
   }, []);
 
-  const handleOpenModal = (item?: ArchiveItem) => {
-    if (item) {
-      setEditingItem(item);
-      setFormData({
-        title: item.title,
-        description: item.description,
-        category: item.category,
-        year: item.year,
-        image_url: item.image_url || '',
-        link_url: item.link_url || ''
-      });
-    } else {
-      setEditingItem(null);
-      setFormData({
-        title: '',
-        description: '',
-        category: '',
-        year: new Date().getFullYear(),
-        image_url: '',
-        link_url: ''
-      });
-    }
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setEditingItem(null);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === 'year' ? parseInt(value) || new Date().getFullYear() : value
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleDelete = async (id: string) => {
+    setIsDeleting(true);
     try {
-      if (editingItem) {
-        const { error } = await supabase
-          .from('archive_kegiatan')
-          .update(formData)
-          .eq('id', editingItem.id);
+      const { error } = await supabase
+        .from('archive_kegiatan')
+        .delete()
+        .eq('id', id);
 
-        if (error) throw error;
-        alert('Data berhasil diperbarui!');
-      } else {
-        const { error } = await supabase
-          .from('archive_kegiatan')
-          .insert([formData]);
+      if (error) throw error;
 
-        if (error) throw error;
-        alert('Data berhasil ditambahkan!');
-      }
-
-      handleCloseModal();
+      setDeleteConfirmId(null);
       fetchArchives();
     } catch (error: any) {
-      console.error('Error saving data:', error);
-      alert('Gagal menyimpan data: ' + error.message);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Apakah Anda yakin ingin menghapus arsip ini?')) {
-      try {
-        const { error } = await supabase
-          .from('archive_kegiatan')
-          .delete()
-          .eq('id', id);
-
-        if (error) throw error;
-        alert('Data berhasil dihapus!');
-        fetchArchives();
-      } catch (error: any) {
-        console.error('Error deleting data:', error);
-        alert('Gagal menghapus data: ' + error.message);
-      }
+      console.error('Error deleting data:', error);
+      alert('Gagal menghapus data: ' + error.message);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -141,13 +96,23 @@ export default function AdminArchive() {
     item.year.toString().includes(searchQuery)
   );
 
+  const totalPages = Math.ceil(filteredArchives.length / itemsPerPage);
+  const currentArchives = filteredArchives.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
   return (
     <div className="flex flex-col gap-[24px]">
       <div className="flex flex-col gap-[8px]">
         <h1 className="font-['Inter',sans-serif] font-extrabold text-[32px] md:text-[40px] leading-tight text-[#031F41] dark:text-white transition-colors">
           Kelola Archive Kegiatan
         </h1>
-        <p className="text-[16px] text-gray-500 dark:text-gray-400 transition-colors">Tambah, edit, dan hapus Kegiatan</p>
+        <p className="font-['Inter',sans-serif] text-[16px] text-gray-500 dark:text-gray-400 transition-colors">Tambah, edit, dan hapus Kegiatan</p>
       </div>
 
       <div className="flex flex-col sm:flex-row justify-between items-center gap-[16px]">
@@ -165,7 +130,7 @@ export default function AdminArchive() {
               placeholder="Cari event..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#F0F2F5] dark:bg-[#112240] border border-[#E2E8F0] dark:border-[#233554] rounded-[8px] py-[8px] pl-[36px] pr-[16px] text-[14px] text-gray-900 dark:text-white outline-none focus:border-[#031F41] dark:focus:border-blue-500 transition-colors"
+              className="font-['Inter',sans-serif] w-full bg-[#F0F2F5] dark:bg-[#112240] border border-[#E2E8F0] dark:border-[#233554] rounded-[8px] py-[8px] pl-[36px] pr-[16px] text-[14px] text-gray-900 dark:text-white outline-none focus:border-[#031F41] dark:focus:border-blue-500 transition-colors"
             />
           </div>
 
@@ -202,19 +167,21 @@ export default function AdminArchive() {
             </thead>
             <tbody className="divide-y divide-[#E2E8F0] dark:divide-[#233554]">
               {loading ? (
+                <>
+                  <SkeletonRow />
+                  <SkeletonRow />
+                  <SkeletonRow />
+                  <SkeletonRow />
+                  <SkeletonRow />
+                </>
+              ) : currentArchives.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-[32px] text-center text-gray-500 dark:text-gray-400">
-                    Memuat data...
-                  </td>
-                </tr>
-              ) : filteredArchives.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="py-[32px] text-center text-gray-500 dark:text-gray-400">
+                  <td colSpan={5} className="py-[32px] text-center text-gray-500 dark:text-gray-400 font-['Plus_Jakarta_Sans',sans-serif]">
                     Tidak ada data arsip ditemukan.
                   </td>
                 </tr>
               ) : (
-                filteredArchives.map((item) => (
+                currentArchives.map((item) => (
                   <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-[#1a2b4c] transition-colors">
                     <td className="py-[16px] px-[24px]">
                       <div className="flex flex-col gap-[4px]">
@@ -238,25 +205,27 @@ export default function AdminArchive() {
                     </td>
                     <td className="py-[16px] px-[24px]">
                       {item.image_url ? (
-                        <span className="font-['Plus_Jakarta_Sans',sans-serif] text-[12px] text-blue-600 dark:text-blue-400 truncate max-w-[100px] inline-block transition-colors">
-                          Tersedia
-                        </span>
+                        <img 
+                          src={item.image_url} 
+                          alt="thumbnail" 
+                          className="w-[40px] h-[40px] object-cover rounded-[8px] shadow-sm border border-gray-200 dark:border-gray-700" 
+                        />
                       ) : (
-                        <span className="font-['Plus_Jakarta_Sans',sans-serif] text-[12px] text-gray-400 dark:text-gray-500 transition-colors">
-                          Tidak ada
-                        </span>
+                        <div className="w-[40px] h-[40px] bg-gray-100 dark:bg-[#0a192f] rounded-[8px] flex items-center justify-center text-[10px] text-gray-400 dark:text-gray-500 font-['Plus_Jakarta_Sans',sans-serif] border border-gray-200 dark:border-[#233554]">
+                          N/A
+                        </div>
                       )}
                     </td>
                     <td className="py-[16px] px-[24px]">
                       <div className="flex items-center justify-center gap-[8px]">
-                        <button
-                          onClick={() => handleOpenModal(item)}
-                          className="bg-[#EBF8FF] dark:bg-blue-900/30 text-[#2B6CB0] dark:text-blue-400 font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[12px] px-[16px] py-[6px] rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
+                        <Link
+                          href={`/admin/archive/edit/${item.id}`}
+                          className="bg-[#EBF8FF] dark:bg-blue-900/30 text-[#2B6CB0] dark:text-blue-400 font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[12px] px-[16px] py-[6px] rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors inline-block"
                         >
                           Edit
-                        </button>
+                        </Link>
                         <button
-                          onClick={() => handleDelete(item.id)}
+                          onClick={() => setDeleteConfirmId(item.id)}
                           className="bg-[#FFF5F5] dark:bg-red-900/30 text-[#C53030] dark:text-red-400 font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[12px] px-[16px] py-[6px] rounded-full hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"
                         >
                           Hapus
@@ -272,120 +241,62 @@ export default function AdminArchive() {
       </div>
 
       <div className="flex justify-between items-center text-[12px] text-[#718096] dark:text-gray-400 font-['Plus_Jakarta_Sans',sans-serif] transition-colors">
-        <span>Menampilkan {filteredArchives.length} dari {archives.length} kegiatan</span>
-        <div className="flex gap-[8px]">
-          <span className="bg-[#222375] dark:bg-[#173f97] text-white w-[28px] h-[28px] rounded-[4px] flex items-center justify-center font-bold">1</span>
-        </div>
+        <span>
+          Menampilkan {filteredArchives.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredArchives.length)} dari {filteredArchives.length} kegiatan
+        </span>
+        
+        {totalPages > 1 && (
+          <div className="flex gap-[8px]">
+            {Array.from({ length: totalPages }).map((_, idx) => {
+              const page = idx + 1;
+              const isActive = currentPage === page;
+              return (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`w-[28px] h-[28px] rounded-[4px] flex items-center justify-center font-bold transition-colors ${
+                    isActive 
+                      ? 'bg-[#222375] dark:bg-[#173f97] text-white' 
+                      : 'bg-gray-100 dark:bg-[#112240] text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#1a2b4c]'
+                  }`}
+                >
+                  {page}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-[20px] backdrop-blur-sm transition-opacity">
-          <div className="bg-white dark:bg-[#112240] rounded-[16px] w-full max-w-[600px] max-h-[90vh] overflow-y-auto shadow-2xl p-[32px] transition-colors">
-            <h2 className="text-[24px] font-bold text-[#031F41] dark:text-white mb-[24px] transition-colors">
-              {editingItem ? 'Edit Kegiatan' : 'Tambah Kegiatan Baru'}
-            </h2>
-
-            <form onSubmit={handleSubmit} className="flex flex-col gap-[20px]">
-              <div className="flex flex-col gap-[8px]">
-                <label className="text-[14px] font-semibold text-[#4A5568] dark:text-gray-300">Nama Kegiatan</label>
-                <input
-                  type="text"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleChange}
-                  required
-                  className="w-full bg-transparent border border-gray-300 dark:border-[#233554] rounded-[8px] px-[16px] py-[10px] text-gray-900 dark:text-white outline-none focus:border-[#031F41] dark:focus:border-blue-500 transition-colors"
-                  placeholder="Contoh: Pemeriksaan Kesehatan Gratis..."
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-[20px]">
-                <div className="flex flex-col gap-[8px]">
-                  <label className="text-[14px] font-semibold text-[#4A5568] dark:text-gray-300">Kategori</label>
-                  <input
-                    type="text"
-                    name="category"
-                    value={formData.category}
-                    onChange={handleChange}
-                    required
-                    className="w-full bg-transparent border border-gray-300 dark:border-[#233554] rounded-[8px] px-[16px] py-[10px] text-gray-900 dark:text-white outline-none focus:border-[#031F41] dark:focus:border-blue-500 transition-colors"
-                    placeholder="Contoh: PENGABDIAN MASYARAKAT"
-                  />
-                </div>
-                <div className="flex flex-col gap-[8px]">
-                  <label className="text-[14px] font-semibold text-[#4A5568] dark:text-gray-300">Tahun</label>
-                  <input
-                    type="number"
-                    name="year"
-                    value={formData.year}
-                    onChange={handleChange}
-                    required
-                    className="w-full bg-transparent border border-gray-300 dark:border-[#233554] rounded-[8px] px-[16px] py-[10px] text-gray-900 dark:text-white outline-none focus:border-[#031F41] dark:focus:border-blue-500 transition-colors"
-                    placeholder="2026"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-[8px]">
-                <label className="text-[14px] font-semibold text-[#4A5568] dark:text-gray-300 flex justify-between">
-                  <span>Deskripsi Lengkap</span>
-                  <span className="font-normal text-[#A0AEC0] text-[12px]">{formData.description.length} / 750 karakter</span>
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  required
-                  maxLength={750}
-                  rows={4}
-                  className="w-full bg-transparent border border-gray-300 dark:border-[#233554] rounded-[8px] px-[16px] py-[10px] text-gray-900 dark:text-white outline-none focus:border-[#031F41] dark:focus:border-blue-500 resize-none transition-colors"
-                  placeholder="Penjelasan detail tentang kegiatan tersebut..."
-                />
-              </div>
-
-              <div className="flex flex-col gap-[8px]">
-                <label className="text-[14px] font-semibold text-[#4A5568] dark:text-gray-300">URL Gambar / File (Opsional)</label>
-                <input
-                  type="text"
-                  name="image_url"
-                  value={formData.image_url}
-                  onChange={handleChange}
-                  className="w-full bg-transparent border border-gray-300 dark:border-[#233554] rounded-[8px] px-[16px] py-[10px] text-gray-900 dark:text-white outline-none focus:border-[#031F41] dark:focus:border-blue-500 transition-colors"
-                  placeholder="/assets/image.jpg"
-                />
-              </div>
-
-              <div className="flex flex-col gap-[8px]">
-                <label className="text-[14px] font-semibold text-[#4A5568] dark:text-gray-300">Link Detail Kegiatan (Opsional)</label>
-                <input
-                  type="text"
-                  name="link_url"
-                  value={formData.link_url}
-                  onChange={handleChange}
-                  className="w-full bg-transparent border border-gray-300 dark:border-[#233554] rounded-[8px] px-[16px] py-[10px] text-gray-900 dark:text-white outline-none focus:border-[#031F41] dark:focus:border-blue-500 transition-colors"
-                  placeholder="https://ipb.ac.id/news..."
-                />
-              </div>
-
-              <div className="flex justify-end gap-[12px] mt-[12px] pt-[20px] border-t border-gray-200 dark:border-[#233554] transition-colors">
-                <button
-                  type="button"
-                  onClick={handleCloseModal}
-                  className="px-[20px] py-[10px] rounded-[8px] font-bold text-[#4A5568] dark:text-gray-300 bg-gray-100 dark:bg-[#233554] hover:bg-gray-200 dark:hover:bg-[#2a3f66] transition-colors"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="px-[20px] py-[10px] rounded-[8px] font-bold text-white bg-[#031F41] dark:bg-[#173f97] hover:bg-[#102F77] dark:hover:bg-[#1e4eb8] transition-colors"
-                >
-                  Simpan Kegiatan
-                </button>
-              </div>
-            </form>
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity">
+          <div className="bg-white dark:bg-[#112240] rounded-[16px] p-[32px] shadow-xl w-[90%] max-w-[400px]">
+            <h3 className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[20px] text-[#031F41] dark:text-white mb-[16px]">
+              Konfirmasi Hapus
+            </h3>
+            <p className="font-['Plus_Jakarta_Sans',sans-serif] text-[14px] text-gray-600 dark:text-gray-300 mb-[24px]">
+              Apakah Anda yakin ingin menghapus arsip kegiatan ini? Tindakan ini tidak dapat dibatalkan.
+            </p>
+            <div className="flex gap-[12px] justify-end">
+              <button 
+                onClick={() => setDeleteConfirmId(null)}
+                disabled={isDeleting}
+                className="px-[16px] py-[8px] rounded-[8px] text-[#4A5568] dark:text-gray-300 font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[14px] hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                Batal
+              </button>
+              <button 
+                onClick={() => handleDelete(deleteConfirmId)}
+                disabled={isDeleting}
+                className="px-[16px] py-[8px] rounded-[8px] bg-[#E53E3E] hover:bg-[#C53030] text-white font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[14px] transition-colors flex items-center gap-2"
+              >
+                {isDeleting ? 'Menghapus...' : 'Ya, Hapus'}
+              </button>
+            </div>
           </div>
         </div>
       )}
+
     </div>
   );
 }

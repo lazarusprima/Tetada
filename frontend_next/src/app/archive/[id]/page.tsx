@@ -64,7 +64,7 @@ export default async function ArchiveDetailPage({
         </Link>
 
         <div className="flex flex-col lg:flex-row gap-[48px] items-start">
-          {/* Left Image Section */}
+          
           <div className="w-full lg:w-[446px] h-[400px] lg:h-[632px] bg-[#EFEDF1] rounded-[20px] overflow-hidden relative flex-shrink-0 shadow-sm">
             {archive.image_url ? (
               <img 
@@ -81,7 +81,6 @@ export default async function ArchiveDetailPage({
             )}
           </div>
 
-          {/* Right Content Section */}
           <div className="flex-1 w-full bg-[#EFEDF1] rounded-[20px] p-[32px] lg:p-[48px] min-h-[400px] lg:min-h-[632px] shadow-sm flex flex-col">
             <div className="mb-[24px]">
               <span className="inline-block px-[16px] py-[6px] bg-[#031F41] text-white font-['Inter',sans-serif] text-[12px] font-bold rounded-full mb-[16px] uppercase tracking-wider">

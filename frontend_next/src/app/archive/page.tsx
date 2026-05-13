@@ -13,28 +13,61 @@ interface ArchiveItem {
   link_url?: string;
 }
 
+const SkeletonCard = () => (
+  <div className="bg-[rgba(227,226,229,0.3)] rounded-[20px] p-[24px] md:p-[32px] flex flex-col animate-pulse">
+    <div className="w-full aspect-[370/192] rounded-[16px] bg-gray-300/60 mb-[16px]"></div>
+    <div className="flex flex-col flex-1">
+      <div className="w-1/4 h-[15px] bg-gray-300/60 rounded mb-[12px]"></div>
+      <div className="w-3/4 h-[28px] bg-gray-300/60 rounded mb-[12px]"></div>
+      <div className="w-full h-[20px] bg-gray-300/60 rounded mb-[8px]"></div>
+      <div className="w-5/6 h-[20px] bg-gray-300/60 rounded mb-[16px]"></div>
+      <div className="mt-auto pt-[4px]">
+        <div className="w-1/3 h-[16px] bg-gray-300/60 rounded"></div>
+      </div>
+    </div>
+  </div>
+);
+
 export default function ArchivePage() {
   const [archives, setArchives] = useState<ArchiveItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeYear, setActiveYear] = useState<number | null>(null);
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [errorState, setErrorState] = useState<boolean>(false);
+
   useEffect(() => {
     const fetchArchives = async () => {
-      const { data, error } = await supabase
-        .from('archive_kegiatan')
-        .select('*')
-        .order('year', { ascending: false });
-      
-      if (!error && data && data.length > 0) {
-        setArchives(data);
+      try {
+        const { data, error } = await supabase
+          .from('archive_kegiatan')
+          .select('*')
+          .order('year', { ascending: false });
+        
+        if (error) {
+          throw error;
+        }
+
+        if (data) {
+          setArchives(data);
+        }
+      } catch (err) {
+        console.error("Error fetching archives:", err);
+        setErrorState(true);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchArchives();
   }, []);
 
-  const groupedArchives = archives.reduce((acc, curr) => {
+  const filteredArchives = archives.filter(item => {
+    return item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+           (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
+  });
+
+  const groupedArchives = filteredArchives.reduce((acc, curr) => {
     if (!acc[curr.year]) {
       acc[curr.year] = [];
     }
@@ -43,49 +76,11 @@ export default function ArchivePage() {
   }, {} as Record<number, ArchiveItem[]>);
 
   const sortedYears = Object.keys(groupedArchives).map(Number).sort((a, b) => b - a);
-
-  const displayYears = sortedYears.length > 0 ? sortedYears : [2026, 2025];
-  const displayArchives = sortedYears.length > 0 ? groupedArchives : {
-    2026: [
-      {
-        id: '1',
-        title: 'Kegiatan pelatihan dan pelantikan TETADA 9 di Gunung Bunder',
-        description: 'Kegiatan tahunan yang melibatkan seluruh anggota baru TETADA untuk menjalani pelatihan dan pelantikan.',
-        category: 'PELATIHAN KEGAWATDARURATAN',
-        year: 2026,
-        image_url: '/assets/WhatsApp Image 2026-04-20 at 08.49.59.jpg',
-      },
-      {
-        id: '2',
-        title: 'Implementasi Sistem Monitoring Drone untuk Kawasan Hutan IPB',
-        description: 'Peluncuran unit pemantauan udara untuk pencegahan dini kebakaran hutan dan lahan di kawasan pendidikan.',
-        category: 'TEKNOLOGI MITIGASI',
-        year: 2026,
-        image_url: '',
-      }
-    ],
-    2025: [
-      {
-        id: '3',
-        title: 'Pemeriksaan Kesehatan Gratis & Simulasi Gempa di Desa Cikarawang',
-        description: 'Inisiatif tahunan tim medis TETADA IPB untuk meningkatkan resiliensi masyarakat di desa penyangga kampus.',
-        category: 'PENGABDIAN MASYARAKAT',
-        year: 2025,
-        image_url: '',
-      },
-      {
-        id: '4',
-        title: 'Implementasi Sistem Monitoring Drone untuk Kawasan Hutan IPB',
-        description: 'Peluncuran unit pemantauan udara untuk pencegahan dini kebakaran hutan dan lahan di kawasan pendidikan.',
-        category: 'TEKNOLOGI MITIGASI',
-        year: 2025,
-        image_url: '',
-      }
-    ]
-  };
+  const displayYears = sortedYears;
+  const displayArchives = groupedArchives;
 
   useEffect(() => {
-    if (displayYears.length > 0 && activeYear === null) {
+    if (displayYears.length > 0 && (activeYear === null || !displayYears.includes(activeYear))) {
       setActiveYear(displayYears[0]);
     }
   }, [displayYears, activeYear]);
@@ -122,37 +117,89 @@ export default function ArchivePage() {
       </section>
 
       <div className="max-w-[1440px] mx-auto relative mt-[50px] px-[24px] lg:px-[104px]">
+
+        <div className="mb-[40px] flex justify-end">
+          <div className="bg-white rounded-[16px] p-[12px] shadow-sm flex items-center w-full md:w-[320px]">
+            <div className="relative w-full">
+              <span className="absolute left-[16px] top-[50%] -translate-y-1/2 text-gray-400">🔍</span>
+              <input 
+                type="text" 
+                placeholder="Cari arsip..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-[#F5F3F6] border border-transparent focus:border-[#1D3557] rounded-[12px] py-[10px] pl-[44px] pr-[16px] text-[#031F41] text-[14px] outline-none transition-colors font-['Inter',sans-serif]"
+              />
+            </div>
+          </div>
+        </div>
+
         <div className="flex flex-col lg:flex-row gap-[40px] lg:gap-[130px] relative">
-          
+
           <aside className="lg:w-[300px] flex-shrink-0 lg:sticky lg:top-[120px] h-fit">
             <div className="bg-[#F5F3F6] rounded-[20px] p-[32px] shadow-sm">
               <h3 className="font-['Manrope',sans-serif] font-extrabold text-[20px] leading-[28px] tracking-[-0.5px] text-[#031F41] mb-[24px]">
                 Timeline Arsip
               </h3>
               <nav className="flex flex-col gap-[4px]">
-                {displayYears.map((year) => {
-                  const isActive = activeYear === year;
-                  return (
-                    <a 
-                      key={year}
-                      href={`#year-${year}`}
-                      onClick={() => setActiveYear(year)}
-                      className={`group flex justify-between items-center px-[16px] py-[12px] rounded-[16px] transition-all duration-300 ${isActive ? 'bg-[#E9E7EB]' : 'hover:bg-[#E9E7EB]/70'}`}
-                    >
-                      <span className={`font-['Inter',sans-serif] text-[16px] leading-[24px] transition-colors duration-300 ${isActive ? 'font-extrabold text-[#44474E]' : 'font-normal text-[#031F41] group-hover:text-[#44474E]'}`}>
-                        Tahun {year}
-                      </span>
-                      <div className={`w-[9px] h-[9px] rounded-full transition-all duration-300 ${isActive ? 'bg-[#44474E] opacity-100 scale-100' : 'bg-[#44474E] opacity-0 scale-50 group-hover:opacity-40 group-hover:scale-100'}`}></div>
-                    </a>
-                  );
-                })}
+                {loading ? (
+                   Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="flex justify-between items-center px-[16px] py-[12px] rounded-[16px] animate-pulse">
+                      <div className="h-[20px] bg-gray-300/60 rounded w-[80px]"></div>
+                    </div>
+                  ))
+                ) : displayYears.length === 0 ? (
+                  <div className="text-gray-500 font-['Inter',sans-serif] text-[14px]">Tidak ada tahun tersedia</div>
+                ) : (
+                  displayYears.map((year) => {
+                    const isActive = activeYear === year;
+                    return (
+                      <a 
+                        key={year}
+                        href={`#year-${year}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setActiveYear(year);
+                          document.getElementById(`year-${year}`)?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className={`group flex justify-between items-center px-[16px] py-[12px] rounded-[16px] transition-all duration-300 ${isActive ? 'bg-[#E9E7EB]' : 'hover:bg-[#E9E7EB]/70'}`}
+                      >
+                        <span className={`font-['Inter',sans-serif] text-[16px] leading-[24px] transition-colors duration-300 ${isActive ? 'font-extrabold text-[#44474E]' : 'font-normal text-[#031F41] group-hover:text-[#44474E]'}`}>
+                          Tahun {year}
+                        </span>
+                        <div className={`w-[9px] h-[9px] rounded-full transition-all duration-300 ${isActive ? 'bg-[#44474E] opacity-100 scale-100' : 'bg-[#44474E] opacity-0 scale-50 group-hover:opacity-40 group-hover:scale-100'}`}></div>
+                      </a>
+                    );
+                  })
+                )}
               </nav>
             </div>
           </aside>
 
           <main className="flex-1 flex flex-col gap-[80px]">
-            {loading && displayYears.length === 0 ? (
-              <div className="text-center py-20 text-gray-500 font-['Inter']">Memuat data arsip...</div>
+            {loading ? (
+              <div className="flex flex-col gap-[48px]">
+                <div className="flex items-center gap-[24px] animate-pulse">
+                  <div className="w-[150px] h-[72px] md:h-[96px] bg-gray-300/60 rounded-[12px]"></div>
+                  <div className="h-[2px] flex-1 bg-gray-300/60"></div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-[24px]">
+                  <SkeletonCard />
+                  <SkeletonCard />
+                  <SkeletonCard />
+                  <SkeletonCard />
+                </div>
+              </div>
+            ) : errorState ? (
+              <div className="text-center py-20 bg-white rounded-[20px] shadow-sm">
+                <p className="text-[#FF715D] font-['Inter',sans-serif] font-semibold text-[18px] mb-2">Terjadi kesalahan</p>
+                <p className="text-gray-500 font-['Inter',sans-serif] text-[14px]">Gagal memuat data arsip. Silakan muat ulang halaman.</p>
+              </div>
+            ) : displayYears.length === 0 ? (
+              <div className="text-center py-20 bg-white rounded-[20px] shadow-sm">
+                <p className="text-gray-500 font-['Inter',sans-serif] text-[16px]">
+                  {archives.length === 0 ? "Belum ada arsip kegiatan." : "Tidak ada arsip yang cocok dengan pencarian Anda."}
+                </p>
+              </div>
             ) : (
               displayYears.map((year) => (
                 <section key={year} id={`year-${year}`} className="flex flex-col gap-[48px] scroll-mt-[120px]">
