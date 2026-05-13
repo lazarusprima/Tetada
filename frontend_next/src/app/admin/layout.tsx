@@ -205,7 +205,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className={`fixed inset-y-0 left-0 z-50 transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out w-[280px] md:w-[285px] bg-[#05244d] dark:bg-[#020c1b] p-[28px_18px] text-white flex flex-col shrink-0 shadow-2xl md:shadow-none`}>
         <div className="flex items-center justify-between mb-[34px]">
           <div className="flex items-center gap-[14px]">
-            <img src="/assets/logo_tetada.jpeg" className="w-[48px] h-[48px] rounded-full object-cover bg-white" alt="Logo" />
+            <img src="/assets/logo_tetada.png" className="w-[48px] h-[48px] rounded-full object-cover bg-white" alt="Logo" />
             <div>
               <h2 className="text-[20px] font-bold mb-[4px]">TETADA IPB</h2>
               <p className="text-[13px] text-[#c4d5ea]">Tim Tanggap Darurat IPB</p>
@@ -229,7 +229,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Link href="/admin/archive" onClick={() => setIsSidebarOpen(false)} className={`no-underline p-[14px_16px] rounded-[14px] font-semibold flex items-center gap-[12px] transition duration-200 ${pathname.startsWith('/admin/archive') ? 'bg-[#173f97] text-white' : 'text-[#7ea2c8] hover:bg-[#0c3470] hover:text-white'}`}>
             <i className="fa-regular fa-folder w-[20px]"></i> ARCHIVE
           </Link>
-          <Link href="/admin/reports" onClick={() => setIsSidebarOpen(false)} className={`no-underline p-[14px_16px] rounded-[14px] font-semibold flex items-center gap-[12px] transition duration-200 ${pathname.startsWith('/admin/reports') ? 'bg-[#173f97] text-white' : 'text-[#7ea2c8] hover:bg-[#0c3470] hover:text-white'}`}>
+          <Link href="/admin/contact" onClick={() => setIsSidebarOpen(false)} className={`no-underline p-[14px_16px] rounded-[14px] font-semibold flex items-center gap-[12px] transition duration-200 ${pathname.startsWith('/admin/contact') ? 'bg-[#173f97] text-white' : 'text-[#7ea2c8] hover:bg-[#0c3470] hover:text-white'}`}>
             <i className="fa-solid fa-snowflake w-[20px]"></i> EMERGENCY REPORTS
           </Link>
         </nav>

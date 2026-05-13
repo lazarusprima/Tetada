@@ -25,7 +25,7 @@ export default function Navbar() {
         <div className="w-[92%] max-w-[1600px] mx-auto flex justify-between min-[1100px]:grid min-[1100px]:grid-cols-[260px_1fr_260px] items-center gap-[20px] min-h-[64px]">
           <div className="flex items-center gap-[12px]">
             <div className="w-[42px] h-[42px] md:w-[50px] md:h-[50px] rounded-full overflow-hidden shrink-0 bg-white">
-              <img src="/assets/logo_tetada.jpeg" alt="Logo TETADA" className="w-full h-full object-cover" />
+              <img src="/assets/logo_tetada.png" alt="Logo TETADA" className="w-full h-full object-cover" />
             </div>
             <div className="flex flex-col">
               <h2 className="text-[18px] md:text-[22px] text-white font-bold leading-none mb-[4px] whitespace-nowrap">TETADA IPB</h2>
@@ -49,9 +49,9 @@ export default function Navbar() {
 
           <div className="hidden min-[1100px]:flex justify-end items-center gap-[12px]">
             <Link href="/login" className="no-underline text-[12px] text-[#d7e6f5] px-[16px] py-[10px] rounded-full bg-white/5 border border-white/10 whitespace-nowrap hover:bg-white/10">Login Admin</Link>
-            <button className="border-none bg-[#e11d1d] text-white px-[20px] py-[11px] rounded-full text-[12px] font-bold cursor-pointer whitespace-nowrap hover:bg-[#c51414]" onClick={() => alert('Mode darurat diaktifkan!')}>
+            <Link href="/contact" className="no-underline border-none bg-[#e11d1d] text-white px-[20px] py-[11px] rounded-full text-[12px] font-bold cursor-pointer whitespace-nowrap hover:bg-[#c51414]">
               EMERGENCY
-            </button>
+            </Link>
           </div>
 
         </div>
@@ -61,7 +61,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between mb-[34px]">
           <div className="flex items-center gap-[12px]">
             <div className="w-[42px] h-[42px] rounded-full overflow-hidden shrink-0 bg-white">
-              <img src="/assets/logo_tetada.jpeg" alt="Logo TETADA" className="w-full h-full object-cover" />
+              <img src="/assets/logo_tetada.png" alt="Logo TETADA" className="w-full h-full object-cover" />
             </div>
             <div className="flex flex-col">
               <h2 className="text-[18px] text-white font-bold leading-none mb-[4px] whitespace-nowrap">TETADA IPB</h2>
@@ -82,9 +82,9 @@ export default function Navbar() {
 
         <div className="flex flex-col gap-[12px] mt-auto">
           <Link href="/login" className="no-underline text-center text-[13px] text-[#d7e6f5] px-[16px] py-[12px] rounded-full bg-white/5 border border-white/10 hover:bg-white/10" onClick={() => setIsMobileMenuOpen(false)}>Login Admin</Link>
-          <button className="border-none bg-[#e11d1d] text-white px-[20px] py-[12px] rounded-full text-[13px] font-bold cursor-pointer hover:bg-[#c51414]" onClick={() => { alert('Mode darurat diaktifkan!'); setIsMobileMenuOpen(false); }}>
+          <Link href="/contact" className="no-underline text-center border-none bg-[#e11d1d] text-white px-[20px] py-[12px] rounded-full text-[13px] font-bold cursor-pointer hover:bg-[#c51414]" onClick={() => setIsMobileMenuOpen(false)}>
             EMERGENCY
-          </button>
+          </Link>
         </div>
       </div>
     </>

@@ -45,7 +45,7 @@ export default function Login() {
       <header className="bg-[#06244d] py-[14px] shadow-[0_8px_24px_rgba(0,0,0,.18)] relative z-10">
         <div className="w-[92%] max-w-[1600px] mx-auto flex items-center justify-between gap-[20px] md:flex-row flex-col md:items-center items-start">
           <div className="flex items-center gap-[12px]">
-            <img src="/assets/logo_tetada.jpeg" alt="Logo TETADA" className="w-[44px] h-[44px] md:w-[44px] md:h-[44px] rounded-full object-cover shrink-0" />
+            <img src="/assets/logo_tetada.png" alt="Logo TETADA" className="w-[44px] h-[44px] md:w-[44px] md:h-[44px] rounded-full object-cover shrink-0" />
             <div className="flex flex-col">
               <h2 className="text-white text-[16px] md:text-[18px] leading-[1.1] font-bold">TETADA IPB</h2>
               <p className="text-[#c5d5e6] text-[10px] md:text-[11px] mt-[2px]">Tim Tanggap Darurat IPB University</p>
@@ -62,7 +62,8 @@ export default function Login() {
       <section className="flex-1 flex justify-center items-center p-[20px] md:p-[40px] relative z-10">
         <div className="w-full max-w-[470px] rounded-[24px] md:rounded-[30px] p-[30px] md:p-[40px] border border-white/50 shadow-[0_30px_60px_rgba(0,0,0,.18),0_12px_25px_rgba(0,0,0,.08),inset_0_2px_0_rgba(255,255,255,.95),inset_0_-8px_18px_rgba(0,0,0,.03)]"
              style={{ background: `linear-gradient(145deg, #f8fafc, #eef2f6)` }}>
-          <img src="/assets/logo_tetada.jpeg" alt="Logo Admin" className="w-[60px] h-[60px] md:w-[68px] md:h-[68px] rounded-full object-cover block mx-auto mb-[18px]" />
+
+          <img src="/assets/logo_tetada.png" alt="Logo Admin" className="w-[60px] h-[60px] md:w-[68px] md:h-[68px] rounded-full object-cover block mx-auto mb-[18px]" />
           <h1 className="text-center text-[34px] md:text-[46px] font-bold text-[#06244d] mb-[10px]">Login Admin</h1>
           <p className="text-center text-[#59708a] text-[14px] mb-[30px]">Masuk untuk mengelola sistem TETADA IPB</p>
 
