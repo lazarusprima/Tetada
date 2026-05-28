@@ -15,6 +15,7 @@ export default function EditArchivePage() {
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [initialData, setInitialData] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
@@ -40,6 +41,7 @@ export default function EditArchivePage() {
         if (error) throw error;
 
         if (data) {
+          setInitialData(data);
           setFormData({
             title: data.title || '',
             year: data.year || new Date().getFullYear(),
@@ -163,11 +165,19 @@ export default function EditArchivePage() {
 
       if (error) throw error;
       
-      alert('Kegiatan berhasil diperbarui!');
-      router.push('/admin/archive');
+      let changes = [];
+      if (initialData?.title !== formData.title) changes.push(`nama dari "${initialData?.title || ''}" menjadi "${formData.title}"`);
+      if (initialData?.category !== formData.category) changes.push(`kategori dari "${initialData?.category || ''}" menjadi "${formData.category}"`);
+      
+      const changesStr = changes.length > 0 ? ` (${changes.join(', ')})` : '';
+      window.dispatchEvent(new CustomEvent('app-notify', { detail: `telah mengupdate Arsip ${formData.title}${changesStr}` }));
+      
+      setTimeout(() => {
+        router.push('/admin/archive');
+      }, 100);
     } catch (error: any) {
       console.error('Error saving data:', error);
-      alert('Gagal memperbarui kegiatan: ' + error.message);
+      window.dispatchEvent(new CustomEvent('app-notify', { detail: `Gagal memperbarui kegiatan ${formData.title}: ${error.message}` }));
     } finally {
       setLoading(false);
     }

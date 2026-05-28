@@ -34,7 +34,7 @@ export default function ArchivePage() {
   const [activeYear, setActiveYear] = useState<number | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [errorState, setErrorState] = useState<boolean>(false);
+  const [errorState, setErrorState] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchArchives = async () => {
@@ -51,9 +51,9 @@ export default function ArchivePage() {
         if (data) {
           setArchives(data);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Error fetching archives:", err);
-        setErrorState(true);
+        setErrorState(err.message || 'Unknown error');
       } finally {
         setLoading(false);
       }
@@ -189,10 +189,12 @@ export default function ArchivePage() {
                   <SkeletonCard />
                 </div>
               </div>
-            ) : errorState ? (
+            ) : errorState !== null ? (
               <div className="text-center py-20 bg-white rounded-[20px] shadow-sm">
                 <p className="text-[#FF715D] font-['Inter',sans-serif] font-semibold text-[18px] mb-2">Terjadi kesalahan</p>
-                <p className="text-gray-500 font-['Inter',sans-serif] text-[14px]">Gagal memuat data arsip. Silakan muat ulang halaman.</p>
+                <p className="text-gray-500 font-['Inter',sans-serif] text-[14px]">
+                  Gagal memuat data arsip. {errorState}
+                </p>
               </div>
             ) : displayYears.length === 0 ? (
               <div className="text-center py-20 bg-white rounded-[20px] shadow-sm">

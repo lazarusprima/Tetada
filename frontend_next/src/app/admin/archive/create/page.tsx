@@ -121,11 +121,13 @@ export default function CreateArchivePage() {
 
       if (error) throw error;
       
-      alert('Kegiatan berhasil ditambahkan!');
-      router.push('/admin/archive');
+      window.dispatchEvent(new CustomEvent('app-notify', { detail: `telah menambahkan Arsip Kegiatan: ${formData.title} (Kategori: ${formData.category || 'UMUM'})` }));
+      setTimeout(() => {
+        router.push('/admin/archive');
+      }, 100);
     } catch (error: any) {
       console.error('Error saving data:', error);
-      alert('Gagal menyimpan kegiatan: ' + error.message);
+      window.dispatchEvent(new CustomEvent('app-notify', { detail: `Gagal menambahkan arsip ${formData.title}: ${error.message}` }));
     } finally {
       setLoading(false);
     }

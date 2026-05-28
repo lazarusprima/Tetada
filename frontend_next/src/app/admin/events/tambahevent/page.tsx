@@ -84,9 +84,12 @@ export default function TambahEventPage() {
     setIsSubmitting(false);
 
     if (error) {
-      alert('Gagal menambahkan event: ' + error.message);
+      window.dispatchEvent(new CustomEvent('app-notify', { detail: `Gagal menambahkan event ${namaEvent}: ${error.message}` }));
     } else {
-      router.push('/admin/events');
+      window.dispatchEvent(new CustomEvent('app-notify', { detail: `telah menambahkan Event baru: ${namaEvent}` }));
+      setTimeout(() => {
+        router.push('/admin/events');
+      }, 100);
     }
   };
 

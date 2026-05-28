@@ -72,6 +72,9 @@ export default function AdminArchive() {
   const handleDelete = async (id: string) => {
     setIsDeleting(true);
     try {
+      const itemToDelete = archives.find(a => a.id === id);
+      const title = itemToDelete ? itemToDelete.title : 'Data arsip';
+      
       const { error } = await supabase
         .from('archive_kegiatan')
         .delete()
@@ -79,11 +82,12 @@ export default function AdminArchive() {
 
       if (error) throw error;
 
+      window.dispatchEvent(new CustomEvent('app-notify', { detail: `telah menghapus arsip: ${title}` }));
       setDeleteConfirmId(null);
       fetchArchives();
     } catch (error: any) {
       console.error('Error deleting data:', error);
-      alert('Gagal menghapus data: ' + error.message);
+      window.dispatchEvent(new CustomEvent('app-notify', { detail: `Gagal menghapus data: ${error.message}` }));
     } finally {
       setIsDeleting(false);
     }

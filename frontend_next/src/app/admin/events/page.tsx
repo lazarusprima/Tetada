@@ -62,8 +62,12 @@ export default function AdminEventsPage() {
   const handleDelete = async () => {
     if (selectedEvent) {
       const { error } = await supabase.from('events').delete().eq('id', selectedEvent.id);
-      if (!error) fetchEvents();
-      else alert('Gagal menghapus event: ' + error.message);
+      if (!error) {
+        window.dispatchEvent(new CustomEvent('app-notify', { detail: `telah menghapus event: ${selectedEvent.nama_event}` }));
+        fetchEvents();
+      } else {
+        window.dispatchEvent(new CustomEvent('app-notify', { detail: `Gagal menghapus event: ${error.message}` }));
+      }
       closeDeleteModal();
     }
   };

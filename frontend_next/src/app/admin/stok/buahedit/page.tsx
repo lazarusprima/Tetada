@@ -17,12 +17,14 @@ function EditJadwalContent() {
   const [stokSisa, setStokSisa] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [initialData, setInitialData] = useState<any>(null);
 
   useEffect(() => {
     if (id) {
       const fetchJadwal = async () => {
         const { data, error } = await supabase.from('jadwal_distribusi').select('*').eq('id', id).single();
         if (data && !error) {
+          setInitialData(data);
           setTanggal(data.tanggal_distribusi || '');
           setWaktu(data.waktu ? data.waktu.substring(0, 5) : '');
           setLokasi(data.lokasi || '');
@@ -62,13 +64,23 @@ function EditJadwalContent() {
     setIsSubmitting(false);
 
     if (error) {
-      alert(`Gagal mengedit jadwal: ${error.message}`);
+      window.dispatchEvent(new CustomEvent('app-notify', { detail: `Gagal mengedit jadwal tanggal ${tanggal}: ${error.message}` }));
     } else if (!data || data.length === 0) {
-      alert("Gagal mengedit: Kemungkinan akses ditolak oleh aturan database (RLS) atau data tidak ditemukan.");
+      window.dispatchEvent(new CustomEvent('app-notify', { detail: `Gagal mengedit jadwal tanggal ${tanggal}: Data tidak ditemukan.` }));
     } else {
-      alert("Jadwal berhasil diperbarui!");
-      router.push('/admin/stok');
-      router.refresh();
+      let changes = [];
+      if (initialData?.lokasi !== lokasi) changes.push(`lokasi dari "${initialData?.lokasi || ''}" menjadi "${lokasi}"`);
+      if (initialData?.waktu?.substring(0,5) !== waktu) changes.push(`waktu dari "${initialData?.waktu?.substring(0,5) || ''}" menjadi "${waktu}"`);
+      if (initialData?.stok_paket_total?.toString() !== stokTotal) changes.push(`total stok dari ${initialData?.stok_paket_total} menjadi ${stokTotal}`);
+      if (initialData?.stok_paket_sisa?.toString() !== stokSisa) changes.push(`sisa stok dari ${initialData?.stok_paket_sisa} menjadi ${stokSisa}`);
+      
+      const changesStr = changes.length > 0 ? ` (${changes.join(', ')})` : '';
+      window.dispatchEvent(new CustomEvent('app-notify', { detail: `telah mengupdate jadwal distribusi tanggal ${tanggal}${changesStr}` }));
+      
+      setTimeout(() => {
+        router.push('/admin/stok');
+        router.refresh();
+      }, 100);
     }
   };
 

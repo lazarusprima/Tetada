@@ -12,6 +12,7 @@ export default function EditContactPage() {
 
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
+  const [initialData, setInitialData] = useState<any>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -35,6 +36,7 @@ export default function EditContactPage() {
         if (error) throw error;
 
         if (data) {
+          setInitialData(data);
           setFormData({
             name: data.name || '',
             description: data.description || '',
@@ -80,11 +82,20 @@ export default function EditContactPage() {
 
       if (error) throw error;
       
-      alert('Kontak darurat berhasil diperbarui!');
-      router.push('/admin/contact');
+      let changes = [];
+      if (initialData?.status !== formData.status) changes.push(`status dari "${initialData?.status || ''}" menjadi "${formData.status}"`);
+      if (initialData?.phone !== formData.phone) changes.push(`no telp dari "${initialData?.phone || ''}" menjadi "${formData.phone}"`);
+      if (initialData?.wa !== formData.wa) changes.push(`wa dari "${initialData?.wa || ''}" menjadi "${formData.wa}"`);
+      
+      const changesStr = changes.length > 0 ? ` (${changes.join(', ')})` : '';
+      window.dispatchEvent(new CustomEvent('app-notify', { detail: `telah mengupdate Kontak ${formData.name}${changesStr}` }));
+      
+      setTimeout(() => {
+        router.push('/admin/contact');
+      }, 100);
     } catch (error: any) {
       console.error('Error saving data:', error);
-      alert('Gagal memperbarui kontak: ' + error.message);
+      window.dispatchEvent(new CustomEvent('app-notify', { detail: `Gagal memperbarui kontak ${formData.name}: ${error.message}` }));
     } finally {
       setLoading(false);
     }
