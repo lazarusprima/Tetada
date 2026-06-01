@@ -17,7 +17,6 @@ export default function EditContactPage() {
     name: '',
     description: '',
     phone: '',
-    wa: '',
     status: 'Aktif'
   });
 
@@ -39,7 +38,6 @@ export default function EditContactPage() {
             name: data.name || '',
             description: data.description || '',
             phone: data.phone || '',
-            wa: data.wa || '',
             status: data.status || 'Aktif'
           });
         }
@@ -73,7 +71,6 @@ export default function EditContactPage() {
           name: formData.name,
           description: formData.description,
           phone: formData.phone,
-          wa: formData.wa,
           status: formData.status
         })
         .eq('id', id);
@@ -198,21 +195,6 @@ export default function EditContactPage() {
                 required
                 className="w-full bg-[#F8FAFC] dark:bg-[#0a192f] border border-[#E2E8F0] dark:border-[#233554] rounded-[8px] px-[16px] py-[12px] font-['Plus_Jakarta_Sans',sans-serif] text-[12px] text-[#1D3557] dark:text-white outline-none focus:border-[#2B6CB0] dark:focus:border-blue-500 transition-colors"
                 placeholder="Contoh: 0251-862-XXXX"
-              />
-            </div>
-
-            <div className="flex flex-col gap-[8px]">
-              <label className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[11px] leading-[14px] text-[#4A5568] dark:text-gray-300">
-                WhatsApp *
-              </label>
-              <input 
-                type="text"
-                name="wa"
-                value={formData.wa}
-                onChange={handleChange}
-                required
-                className="w-full bg-[#F8FAFC] dark:bg-[#0a192f] border border-[#E2E8F0] dark:border-[#233554] rounded-[8px] px-[16px] py-[12px] font-['Plus_Jakarta_Sans',sans-serif] text-[12px] text-[#1D3557] dark:text-white outline-none focus:border-[#2B6CB0] dark:focus:border-blue-500 transition-colors"
-                placeholder="Contoh: 628123456789"
               />
             </div>
           </div>

@@ -54,6 +54,17 @@ export default function ContactPage() {
       );
     }
 
+    if (id === 6) {
+      const waNumber = phone.replace(/[^0-9]/g, '');
+      const waLink = waNumber.startsWith('0') ? `https://wa.me/62${waNumber.substring(1)}` : `https://wa.me/${waNumber}`;
+      return (
+        <a href={waLink} target="_blank" rel="noopener noreferrer" className={styleProps.buttonClass}>
+          <i className={`fa-brands fa-whatsapp ${styleProps.iconColor} group-hover:scale-110 transition-transform`}></i>
+          <span className={`${styleProps.textColor} font-bold text-base`}>WhatsApp Chat</span>
+        </a>
+      );
+    }
+
     return (
       <a href={`tel:${phone}`} className={styleProps.buttonClass}>
         <i className={`fa-solid fa-phone ${styleProps.iconColor} group-hover:scale-110 transition-transform`}></i>
@@ -248,7 +259,7 @@ export default function ContactPage() {
                 Kami memastikan setiap laporan ditangani dengan profesionalisme dan kerahasiaan tinggi. Ikuti langkah sederhana ini untuk melaporkan insiden.
               </p>
               
-              <a href="https://forms.google.com/" target="_blank" rel="noopener noreferrer" className="bg-[#BA1A1A] shadow-[0_10px_15px_-3px_rgba(186,26,26,0.2),0_4px_6px_-4px_rgba(186,26,26,0.2)] rounded-[16px] px-10 py-4 mt-4 flex items-center justify-center hover:bg-[#9a1515] transition-colors w-full sm:w-max group">
+              <a href="https://ipb.link/form-kedaruratan" target="_blank" rel="noopener noreferrer" className="bg-[#BA1A1A] shadow-[0_10px_15px_-3px_rgba(186,26,26,0.2),0_4px_6px_-4px_rgba(186,26,26,0.2)] rounded-[16px] px-10 py-4 mt-4 flex items-center justify-center hover:bg-[#9a1515] transition-colors w-full sm:w-max group">
                 <span className="text-white font-extrabold text-sm tracking-[1.4px] uppercase font-['Inter',sans-serif] group-hover:scale-105 transition-transform">
                   BUAT LAPORAN TERTULIS
                 </span>
