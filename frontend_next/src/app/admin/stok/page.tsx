@@ -78,7 +78,6 @@ export default function AdminStokPage() {
     if (selectedSchedule) {
       const { error } = await supabase.from('jadwal_distribusi').delete().eq('id', selectedSchedule.id);
       if (!error) {
-        window.dispatchEvent(new CustomEvent('app-notify', { detail: "telah menghapus jadwal distribusi." }));
         fetchSchedules();
         fetchStok();
       }
@@ -101,13 +100,10 @@ export default function AdminStokPage() {
 
     if (!error) {
       await supabase.from('stok_buah_susu').insert([{ jumlah: newStock, max_stok: maxStock, status: 'aktif' }]);
-      if (newStock === 0) {
-        window.dispatchEvent(new CustomEvent('app-notify', { detail: `Stok buah & susu hari ini telah habis!` }));
-      }
     } else {
       fetchStok();
       fetchSchedules();
-      window.dispatchEvent(new CustomEvent('app-notify', { detail: "Gagal mengupdate stok buah & susu." }));
+      alert('Gagal mengupdate stok.');
     }
   };
 

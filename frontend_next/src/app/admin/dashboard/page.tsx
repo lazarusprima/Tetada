@@ -10,7 +10,6 @@ export default function Dashboard() {
   const [schedule, setSchedule] = useState<any>(null);
   const [time, setTime] = useState('');
   const [activities, setActivities] = useState<any[]>([]);
-  const [adminName, setAdminName] = useState('Admin');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,21 +41,6 @@ export default function Dashboard() {
           setStock(0);
           setMaxStock(0);
           setTime('--.-- WIB');
-        }
-      }
-
-      const { data: authSession } = await supabase.auth.getSession();
-      if (authSession?.session?.user) {
-        const { data: profile } = await supabase
-          .from('profil_admin')
-          .select('nama')
-          .eq('id', authSession.session.user.id)
-          .maybeSingle();
-        if (profile && profile.nama) {
-          setAdminName(profile.nama);
-        } else {
-           const meta = authSession.session.user.user_metadata;
-           setAdminName(meta?.full_name || meta?.name || 'Admin');
         }
       }
 
@@ -115,7 +99,7 @@ export default function Dashboard() {
     <>
       <div className="bg-[linear-gradient(135deg,#05244d,#0a3d8f)] text-white p-[34px] rounded-[22px] mb-[26px] shadow-lg">
         <p className="text-[18px] opacity-80 mb-[8px]">SELAMAT DATANG!</p>
-        <h1 className="text-[42px] md:text-[72px] leading-none mb-[10px] font-bold">{adminName}</h1>
+        <h1 className="text-[42px] md:text-[72px] leading-none mb-[10px] font-bold">Admin</h1>
         <span className="text-[17px] text-[#d2def0]">
           Ini merupakan dashboard admin yang berfungsi untuk mengubah data yang telah ditampilkan.
         </span>

@@ -45,12 +45,10 @@ export default function TambahJadwalPage() {
     setIsSubmitting(false);
 
     if (error || errorStok) {
-      window.dispatchEvent(new CustomEvent('app-notify', { detail: `Gagal menambahkan jadwal: ${error?.message || errorStok?.message}` }));
+      alert(`Gagal menambahkan jadwal: ${error?.message || errorStok?.message}`);
     } else {
-      window.dispatchEvent(new CustomEvent('app-notify', { detail: `telah menambahkan jadwal distribusi baru untuk tanggal ${tanggal} (Lokasi: ${lokasi}, Stok: ${stokTotal}).` }));
-      setTimeout(() => {
-        router.push('/admin/stok');
-      }, 100);
+      alert("Jadwal dan Stok berhasil ditambahkan!");
+      router.push('/admin/stok');
     }
   };
 

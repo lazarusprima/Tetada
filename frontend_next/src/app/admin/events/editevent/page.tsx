@@ -26,7 +26,6 @@ export default function EditEventPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [initialData, setInitialData] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -35,7 +34,6 @@ export default function EditEventPage() {
       const { data, error } = await supabase.from('events').select('*').eq('id', id).single();
       if (error || !data) { setNotFound(true); }
       else {
-        setInitialData(data);
         setNamaEvent(data.nama_event || '');
         setTanggal(data.tanggal || '');
         setLokasi(data.lokasi || '');
@@ -110,19 +108,9 @@ export default function EditEventPage() {
     setIsSubmitting(false);
 
     if (error) {
-      window.dispatchEvent(new CustomEvent('app-notify', { detail: `Gagal mengupdate event ${namaEvent}: ${error.message}` }));
+      alert('Gagal mengupdate event: ' + error.message);
     } else {
-      let changes = [];
-      if (initialData?.nama_event !== namaEvent) changes.push(`nama dari "${initialData?.nama_event || ''}" menjadi "${namaEvent}"`);
-      if (initialData?.lokasi !== lokasi) changes.push(`lokasi dari "${initialData?.lokasi || ''}" menjadi "${lokasi}"`);
-      if (initialData?.status !== status) changes.push(`status dari "${initialData?.status || ''}" menjadi "${status}"`);
-      
-      const changesStr = changes.length > 0 ? ` (${changes.join(', ')})` : '';
-      window.dispatchEvent(new CustomEvent('app-notify', { detail: `telah mengupdate Event ${namaEvent}${changesStr}` }));
-      
-      setTimeout(() => {
-        router.push('/admin/events');
-      }, 100);
+      router.push('/admin/events');
     }
   };
 

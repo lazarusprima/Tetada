@@ -25,9 +25,6 @@ const SkeletonRow = () => (
       <div className="h-[20px] bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
     </td>
     <td className="py-[16px] px-[24px]">
-      <div className="h-[16px] bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
-    </td>
-    <td className="py-[16px] px-[24px]">
       <div className="h-[24px] bg-gray-200 dark:bg-gray-700 rounded-[6px] w-[50px] inline-block"></div>
     </td>
     <td className="py-[16px] px-[24px]">
@@ -121,7 +118,6 @@ export default function AdminContactPage() {
                 <th className="py-[16px] px-[24px] text-left font-bold text-[12px] text-[#718096] dark:text-gray-400 uppercase tracking-wider">NAMA / INSTANSI</th>
                 <th className="py-[16px] px-[24px] text-left font-bold text-[12px] text-[#718096] dark:text-gray-400 uppercase tracking-wider">DESKRIPSI / PERAN</th>
                 <th className="py-[16px] px-[24px] text-left font-bold text-[12px] text-[#718096] dark:text-gray-400 uppercase tracking-wider">NO. TELEPON</th>
-                <th className="py-[16px] px-[24px] text-left font-bold text-[12px] text-[#718096] dark:text-gray-400 uppercase tracking-wider">WHATSAPP</th>
                 <th className="py-[16px] px-[24px] text-left font-bold text-[12px] text-[#718096] dark:text-gray-400 uppercase tracking-wider">STATUS</th>
                 <th className="py-[16px] px-[24px] text-center font-bold text-[12px] text-[#718096] dark:text-gray-400 uppercase tracking-wider">AKSI</th>
               </tr>
@@ -155,9 +151,6 @@ export default function AdminContactPage() {
                     </td>
                     <td className="py-[16px] px-[24px]">
                       <span className={`font-bold text-[14px] transition-colors ${!isActive ? 'text-gray-500' : 'text-[#1D3557] dark:text-white'}`}>{contact.phone}</span>
-                    </td>
-                    <td className="py-[16px] px-[24px]">
-                      <span className={`text-[13px] transition-colors ${!isActive ? 'text-gray-500' : 'text-[#2B6CB0] dark:text-blue-400'}`}>{contact.wa}</span>
                     </td>
                     <td className="py-[16px] px-[24px]">
                       {isActive ? (
