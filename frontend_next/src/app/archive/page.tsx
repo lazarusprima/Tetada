@@ -9,6 +9,7 @@ interface ArchiveItem {
   description: string;
   category: string;
   year: number;
+  date_month: string;
   image_url: string;
   link_url?: string;
 }
@@ -110,32 +111,25 @@ export default function ArchivePage() {
 
   return (
     <div className="bg-[#F5F5F4] min-h-screen pb-[100px]">
-      <section className="w-full h-[140px] bg-[#031F41] flex flex-col justify-center items-center">
-        <h1 className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[32px] md:text-[40px] leading-[50px] text-white">
-          📁 Arsip Kegiatan
-        </h1>
-      </section>
 
       <div className="max-w-[1440px] mx-auto relative mt-[50px] px-[24px] lg:px-[104px]">
 
-        <div className="mb-[40px] flex justify-end">
-          <div className="bg-white rounded-[16px] p-[12px] shadow-sm flex items-center w-full md:w-[320px]">
-            <div className="relative w-full">
-              <span className="absolute left-[16px] top-[50%] -translate-y-1/2 text-gray-400">🔍</span>
-              <input 
-                type="text" 
-                placeholder="Cari arsip..." 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#F5F3F6] border border-transparent focus:border-[#1D3557] rounded-[12px] py-[10px] pl-[44px] pr-[16px] text-[#031F41] text-[14px] outline-none transition-colors font-['Inter',sans-serif]"
-              />
-            </div>
-          </div>
-        </div>
-
         <div className="flex flex-col lg:flex-row gap-[40px] lg:gap-[130px] relative">
 
-          <aside className="lg:w-[300px] flex-shrink-0 lg:sticky lg:top-[120px] h-fit">
+          <aside className="lg:w-[300px] flex-shrink-0 lg:sticky lg:top-[120px] h-fit flex flex-col gap-6">
+            <div className="bg-white rounded-[16px] p-[12px] shadow-sm flex items-center w-full">
+              <div className="relative w-full">
+                <span className="absolute left-[16px] top-[50%] -translate-y-1/2 text-gray-400">🔍</span>
+                <input 
+                  type="text" 
+                  placeholder="Cari arsip..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-[#F5F3F6] border border-transparent focus:border-[#1D3557] rounded-[12px] py-[10px] pl-[44px] pr-[16px] text-[#031F41] text-[14px] outline-none transition-colors font-['Inter',sans-serif]"
+                />
+              </div>
+            </div>
+
             <div className="bg-[#F5F3F6] rounded-[20px] p-[32px] shadow-sm">
               <h3 className="font-['Manrope',sans-serif] font-extrabold text-[20px] leading-[28px] tracking-[-0.5px] text-[#031F41] mb-[24px]">
                 Timeline Arsip
@@ -185,8 +179,6 @@ export default function ArchivePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-[24px]">
                   <SkeletonCard />
                   <SkeletonCard />
-                  <SkeletonCard />
-                  <SkeletonCard />
                 </div>
               </div>
             ) : errorState ? (
@@ -233,9 +225,19 @@ export default function ArchivePage() {
                         </div>
 
                         <div className="flex flex-col flex-1">
-                          <p className="font-['Inter',sans-serif] font-semibold text-[10px] leading-[15px] tracking-[1px] uppercase text-[#FF715D] mb-[8px]">
-                            {item.category || 'KATEGORI'}
-                          </p>
+                          <div className="flex items-center gap-2 mb-[8px]">
+                            <p className="font-['Inter',sans-serif] font-semibold text-[10px] leading-[15px] tracking-[1px] uppercase text-[#FF715D]">
+                              {item.category || 'KATEGORI'}
+                            </p>
+                            {item.date_month && (
+                              <>
+                                <span className="text-[#A0AEC0] text-[10px]">•</span>
+                                <p className="font-['Inter',sans-serif] font-medium text-[10px] leading-[15px] uppercase text-[#A0AEC0]">
+                                  {item.date_month} {item.year}
+                                </p>
+                              </>
+                            )}
+                          </div>
                           <h4 className="font-['Manrope',sans-serif] font-bold text-[20px] leading-[28px] text-[#031F41] mb-[8px] line-clamp-2">
                             {item.title}
                           </h4>

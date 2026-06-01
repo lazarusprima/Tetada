@@ -12,9 +12,9 @@ export default function EditArchivePage() {
 
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [dragActive, setDragActive] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [fotoFile, setFotoFile] = useState<File | null>(null);
+  const [fotoPreview, setFotoPreview] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
@@ -49,7 +49,7 @@ export default function EditArchivePage() {
             image_url: data.image_url || ''
           });
           if (data.image_url) {
-            setPreviewUrl(data.image_url);
+            setFotoPreview(data.image_url);
           }
         }
       } catch (error: any) {
@@ -69,85 +69,46 @@ export default function EditArchivePage() {
       ...prev,
       [name]: name === 'year' ? parseInt(value) || new Date().getFullYear() : value
     }));
-
-    if (name === 'image_url' && value) {
-      setPreviewUrl(value);
-    }
   };
 
-  const uploadFile = async (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      alert('Hanya file gambar (JPG, PNG, WEBP) yang diperbolehkan.');
+  const handleFileChange = (file: File | null) => {
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      alert('Format file tidak didukung. Gunakan JPG, PNG, atau WEBP.');
       return;
     }
-
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Ukuran file maksimal 5MB.');
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Ukuran file maksimal 2MB.');
       return;
     }
-
-    setUploading(true);
-
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `archive/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('dokumentasi')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data } = supabase.storage
-        .from('dokumentasi')
-        .getPublicUrl(filePath);
-
-      const publicUrl = data.publicUrl;
-
-      setFormData(prev => ({ ...prev, image_url: publicUrl }));
-      setPreviewUrl(publicUrl);
-    } catch (error: any) {
-      console.error('Upload error:', error);
-      alert('Gagal upload gambar: ' + error.message);
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) uploadFile(file);
-  };
-
-  const handleDrag = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true);
-    } else if (e.type === 'dragleave') {
-      setDragActive(false);
-    }
-  }, []);
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-
-    const file = e.dataTransfer.files?.[0];
-    if (file) uploadFile(file);
-  }, []);
-
-  const removeImage = () => {
-    setFormData(prev => ({ ...prev, image_url: '' }));
-    setPreviewUrl(null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    setFotoFile(file);
+    setFotoPreview(URL.createObjectURL(file));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    let uploadedUrl: string = formData.image_url;
+
+    if (fotoFile) {
+      const fileExt = fotoFile.name.split('.').pop();
+      const fileName = `archive/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('dokumentasi')
+        .upload(fileName, fotoFile, { upsert: true });
+
+      if (uploadError) {
+        alert('Gagal mengupload foto: ' + uploadError.message);
+        setLoading(false);
+        return;
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from('dokumentasi')
+        .getPublicUrl(uploadData.path);
+      uploadedUrl = publicUrlData.publicUrl;
+    }
 
     try {
       const { error } = await supabase
@@ -157,7 +118,7 @@ export default function EditArchivePage() {
           description: formData.description,
           category: formData.category || 'UMUM',
           year: formData.year,
-          image_url: formData.image_url
+          image_url: uploadedUrl
         })
         .eq('id', id);
 
@@ -327,104 +288,62 @@ export default function EditArchivePage() {
               Foto Dokumentasi
             </label>
             <p className="font-['Plus_Jakarta_Sans',sans-serif] text-[10px] leading-[13px] text-[#A0AEC0] mb-[8px]">
-              Upload gambar atau masukkan URL. Format: JPG, PNG, WEBP. Maks 5MB.
+              Upload gambar. Format: JPG, PNG, WEBP. Maks 2MB.
             </p>
 
-            <input 
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={handleFileSelect}
-              className="hidden"
-            />
-
-            {previewUrl ? (
-              <div className="relative w-full rounded-[12px] overflow-hidden border border-[#E2E8F0] dark:border-[#233554] bg-[#F8FAFC] dark:bg-[#0a192f] transition-colors">
-                <img 
-                  src={previewUrl} 
-                  alt="Preview" 
-                  className="w-full max-h-[280px] object-cover"
-                  onError={() => setPreviewUrl(null)}
-                />
-                <div className="absolute top-[8px] right-[8px] flex gap-[8px]">
-                  <button 
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setIsDragging(false);
+                handleFileChange(e.dataTransfer.files[0]);
+              }}
+              className={`relative flex flex-col items-center justify-center gap-[10px] rounded-[12px] border-2 border-dashed cursor-pointer transition-colors min-h-[160px] ${
+                isDragging
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                  : 'border-[#E2E8F0] dark:border-[#233554] bg-[#F8FAFC] dark:bg-[#0a192f] hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/10'
+              }`}
+            >
+              {fotoPreview ? (
+                <>
+                  <img src={fotoPreview} alt="Preview" className="max-h-[140px] max-w-full rounded-[8px] object-contain" />
+                  <button
                     type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="bg-white/90 dark:bg-[#112240]/90 backdrop-blur-sm text-[#4A5568] dark:text-gray-300 rounded-full w-[32px] h-[32px] flex items-center justify-center hover:bg-white dark:hover:bg-[#112240] transition-colors shadow-md text-[14px]"
-                    title="Ganti gambar"
-                  >
-                    🔄
-                  </button>
-                  <button 
-                    type="button"
-                    onClick={removeImage}
-                    className="bg-red-500/90 backdrop-blur-sm text-white rounded-full w-[32px] h-[32px] flex items-center justify-center hover:bg-red-600 transition-colors shadow-md text-[14px]"
-                    title="Hapus gambar"
+                    onClick={(e) => { e.stopPropagation(); setFotoFile(null); setFotoPreview(null); setFormData(prev => ({...prev, image_url: ''})) }}
+                    className="absolute top-[8px] right-[8px] bg-red-100 hover:bg-red-200 text-red-600 rounded-full w-[24px] h-[24px] flex items-center justify-center text-[12px] font-bold transition-colors"
                   >
                     ✕
                   </button>
-                </div>
-                <div className="px-[16px] py-[10px] bg-white/80 dark:bg-[#112240]/80 backdrop-blur-sm border-t border-[#E2E8F0] dark:border-[#233554]">
-                  <p className="font-['Plus_Jakarta_Sans',sans-serif] text-[11px] text-[#4A5568] dark:text-gray-400 truncate">
-                    {formData.image_url}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              
-              <div 
-                onDragEnter={handleDrag}
-                onDragLeave={handleDrag}
-                onDragOver={handleDrag}
-                onDrop={handleDrop}
-                onClick={() => !uploading && fileInputRef.current?.click()}
-                className={`w-full bg-[#F8FAFC] dark:bg-[#0a192f] border-[2px] border-dashed rounded-[12px] flex flex-col items-center justify-center py-[40px] gap-[12px] transition-all duration-200 cursor-pointer
-                  ${dragActive 
-                    ? 'border-[#2B6CB0] dark:border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 scale-[1.01]' 
-                    : 'border-[#E2E8F0] dark:border-[#233554] hover:border-[#A0AEC0] dark:hover:border-[#3a5070] hover:bg-[#F0F4F8] dark:hover:bg-[#0c1e38]'
-                  }
-                  ${uploading ? 'pointer-events-none opacity-70' : ''}
-                `}
-              >
-                {uploading ? (
-                  <>
-                    <div className="w-[40px] h-[40px] border-[3px] border-[#E2E8F0] dark:border-[#233554] border-t-[#2B6CB0] dark:border-t-blue-500 rounded-full animate-spin"></div>
-                    <span className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[13px] text-[#2B6CB0] dark:text-blue-400">
-                      Mengupload gambar...
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <div className="w-[48px] h-[48px] rounded-full bg-[#EBF8FF] dark:bg-blue-900/30 flex items-center justify-center text-[22px]">
-                      📷
-                    </div>
-                    <div className="flex flex-col items-center gap-[4px]">
-                      <span className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[13px] text-[#1D3557] dark:text-white">
-                        {dragActive ? 'Lepaskan file di sini' : 'Klik atau seret gambar ke sini'}
-                      </span>
-                      <span className="font-['Plus_Jakarta_Sans',sans-serif] text-[11px] text-[#A0AEC0]">
-                        JPG, PNG, atau WEBP — Maksimal 5MB
-                      </span>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-
-            <div className="flex items-center gap-[12px] mt-[8px]">
-              <div className="flex-1 h-[1px] bg-[#E2E8F0] dark:bg-[#233554]"></div>
-              <span className="font-['Plus_Jakarta_Sans',sans-serif] text-[10px] text-[#A0AEC0] uppercase tracking-wider">atau masukkan URL</span>
-              <div className="flex-1 h-[1px] bg-[#E2E8F0] dark:bg-[#233554]"></div>
+                </>
+              ) : (
+                <>
+                  <i className="fa-solid fa-cloud-arrow-up text-[32px] text-[#A0AEC0] dark:text-[#4a5568]"></i>
+                  <div className="text-center">
+                    <p className="text-[13px] font-bold text-[#4A5568] dark:text-[#a8b2d1]">Drag &amp; drop foto di sini</p>
+                  </div>
+                  <span className="bg-[#222375] text-white text-[12px] font-bold px-[16px] py-[8px] rounded-[8px] hover:bg-[#1a1b5c] transition-colors mt-[4px]">
+                    Pilih File
+                  </span>
+                </>
+              )}
             </div>
 
-            <input 
-              type="text"
-              name="image_url"
-              value={formData.image_url}
-              onChange={handleChange}
-              className="w-full bg-[#F8FAFC] dark:bg-[#0a192f] border border-[#E2E8F0] dark:border-[#233554] rounded-[8px] px-[16px] py-[12px] font-['Plus_Jakarta_Sans',sans-serif] text-[12px] text-[#4A5568] dark:text-white outline-none focus:border-[#2B6CB0] dark:focus:border-blue-500 transition-colors"
-              placeholder="https://contoh.com/gambar.jpg"
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)}
             />
+
+            {fotoFile && (
+              <p className="text-[11px] text-[#4A5568] dark:text-[#a8b2d1] mt-2">
+                <i className="fa-solid fa-check text-green-500 mr-1"></i>
+                {fotoFile.name} ({(fotoFile.size / 1024).toFixed(0)} KB)
+              </p>
+            )}
           </div>
         </div>
 
@@ -437,7 +356,7 @@ export default function EditArchivePage() {
           </Link>
           <button 
             type="submit"
-            disabled={loading || uploading}
+            disabled={loading}
             className="flex items-center justify-center bg-[#222375] dark:bg-[#173f97] rounded-[8px] w-[168px] h-[48px] font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[13px] text-white hover:bg-[#10114a] dark:hover:bg-[#1e4eb8] transition-colors disabled:opacity-50"
           >
             {loading ? 'Menyimpan...' : 'Simpan Perubahan'}

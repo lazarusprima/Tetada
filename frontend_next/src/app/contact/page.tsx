@@ -82,12 +82,6 @@ export default function ContactPage() {
 
   return (
     <div className="bg-[#F5F5F4] min-h-screen w-full flex flex-col items-center pb-24 font-['Plus_Jakarta_Sans',sans-serif]">
-      
-      <div className="w-full bg-[#031F41] py-[33px] flex flex-col justify-center items-center h-[140px]">
-        <h1 className="text-white font-bold text-3xl md:text-[40px] leading-[50px] tracking-tight ">
-          📞 Kontak Darurat
-        </h1>
-      </div>
 
       <div className="w-full max-w-[1232px] px-4 md:px-0 mx-auto mt-12 flex flex-col gap-16 md:gap-[120px]">
 

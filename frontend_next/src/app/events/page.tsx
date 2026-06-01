@@ -58,16 +58,6 @@ export default function Events() {
 
   return (
     <>
-      <section className="relative overflow-hidden pt-[55px] pb-[50px] text-center bg-cover bg-center bg-no-repeat"
-               style={{ backgroundImage: `linear-gradient(rgba(6,36,77,.82), rgba(6,36,77,.88)), url('/assets/event_tetada.jpg')` }}>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,.05),transparent_60%)] pointer-events-none"></div>
-        <div className="w-[92%] max-w-[1600px] mx-auto relative z-10">
-          <h1 className="text-[38px] md:text-[56px] text-white font-bold mb-[12px]">📅 Event & Kegiatan</h1>
-          <p className="text-[18px] text-[#d2e0ef]">
-            Informasi event terbaru yang diselenggarakan oleh TETADA IPB
-          </p>
-        </div>
-      </section>
 
       <section className="pt-[70px] pb-[90px]">
         <div className="w-[92%] max-w-[1600px] mx-auto grid grid-cols-1 min-[1100px]:grid-cols-3 gap-[34px]">
