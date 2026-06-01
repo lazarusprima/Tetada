@@ -15,19 +15,128 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [inviteEmail, setInviteEmail] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
+  
+  
+  const [adminName, setAdminName] = useState('Admin');
+  const [adminEmail, setAdminEmail] = useState('');
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+  const [isUpdatingAccount, setIsUpdatingAccount] = useState(false);
+  const [editAdminName, setEditAdminName] = useState('');
+  const [editUserAvatar, setEditUserAvatar] = useState<File | null>(null);
+  const [previewAvatar, setPreviewAvatar] = useState<string | null>(null);
+  const [welcomeModal, setWelcomeModal] = useState<string | null>(null);
+  const [isFullViewAvatarOpen, setIsFullViewAvatarOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  useEffect(() => {
+    if (isAccountModalOpen) {
+      setEditAdminName(adminName);
+      setPreviewAvatar(userAvatar);
+      setEditUserAvatar(null);
+    }
+  }, [isAccountModalOpen, adminName, userAvatar]);
+  
+  interface AppNotification {
+    id: number;
+    message: string;
+    time: Date;
+    read: boolean;
+  }
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [toastNotification, setToastNotification] = useState<AppNotification | null>(null);
+
+  const adminNameRef = useRef(adminName);
+  useEffect(() => { adminNameRef.current = adminName; }, [adminName]);
+
   const settingsRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
 
   const isSettingsOpen = isSettingsHovered || isSettingsClicked;
+
+  const addManualNotification = async (message: string) => {
+    const newNotif = { id: Date.now(), message, time: new Date(), read: false };
+    setNotifications(prev => [newNotif, ...prev]);
+    setToastNotification(newNotif);
+    setTimeout(() => { setToastNotification(null); }, 5000);
+    
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      supabase.from('notifikasi').insert([{ admin_id: session.user.id, pesan: message, terbaca: false }]).then();
+    }
+  };
+
+  useEffect(() => {
+    const fetchNotifs = async () => {
+      const { data } = await supabase.from('notifikasi').select('*').order('created_at', { ascending: false }).limit(30);
+      if (data) {
+        setNotifications(data.map((n: any) => ({
+          id: n.id,
+          message: n.pesan,
+          time: new Date(n.created_at),
+          read: n.terbaca
+        })));
+      }
+    };
+    fetchNotifs();
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
         setIsSettingsClicked(false);
       }
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleProfileUpdate = async () => {
+    setIsUpdatingAccount(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) throw new Error('Not logged in');
+
+      let finalAvatar = previewAvatar;
+      
+      if (editUserAvatar) {
+        const fileExt = editUserAvatar.name.split('.').pop();
+        const fileName = `${session.user.id}-${Date.now()}.${fileExt}`;
+        const { error: uploadError, data: uploadData } = await supabase.storage
+          .from('pfp')
+          .upload(`avatars/${fileName}`, editUserAvatar, { upsert: true });
+          
+        if (uploadError) throw uploadError;
+        
+        const { data: publicUrlData } = supabase.storage
+          .from('pfp')
+          .getPublicUrl(uploadData.path);
+        finalAvatar = publicUrlData.publicUrl;
+      }
+
+      const { error } = await supabase.from('profil_admin').upsert({
+        id: session.user.id,
+        email: session.user.email,
+        nama: editAdminName,
+        avatar_url: finalAvatar
+      }, { onConflict: 'id' });
+
+      if (error) throw error;
+
+      setAdminName(editAdminName);
+      setUserAvatar(finalAvatar);
+      setIsAccountModalOpen(false);
+      addManualNotification("Anda telah berhasil memperbarui profil akun.");
+
+    } catch (err: any) {
+      alert('Gagal mengupdate profil: ' + err.message);
+    } finally {
+      setIsUpdatingAccount(false);
+    }
+  };
 
   useEffect(() => {
     const hash = window.location.hash;
@@ -38,20 +147,40 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
 
     const syncProfile = async (user: any) => {
-      const meta = user.user_metadata;
       try {
-        const avatar = meta?.avatar_url || 
-                       meta?.picture || 
-                       user.identities?.[0]?.identity_data?.avatar_url || 
-                       user.identities?.[0]?.identity_data?.picture || 
-                       null;
+        const { data: existing, error: selectErr } = await supabase.from('profil_admin').select('*').eq('id', user.id).maybeSingle();
+        if (selectErr) console.error("Error get profil:", selectErr);
+        
+        let finalName = '';
+        let finalAvatar = null;
 
-        await supabase.from('profil_admin').upsert({
-          id: user.id,
-          email: user.email,
-          nama: meta?.full_name || meta?.name || user.email?.split('@')[0] || 'Admin',
-          avatar_url: avatar
-        }, { onConflict: 'id' });
+        if (existing) {
+          finalName = existing.nama;
+          finalAvatar = existing.avatar_url;
+        } else {
+          const meta = user.user_metadata;
+          finalAvatar = meta?.avatar_url || meta?.picture || user.identities?.[0]?.identity_data?.avatar_url || user.identities?.[0]?.identity_data?.picture || null;
+          finalName = meta?.full_name || meta?.name || user.email?.split('@')[0] || 'Admin';
+          
+          await supabase.from('profil_admin').upsert({
+            id: user.id,
+            email: user.email,
+            nama: finalName,
+            avatar_url: finalAvatar
+          }, { onConflict: 'id' });
+        }
+        
+        setAdminName(finalName);
+        setAdminEmail(user.email || '');
+        setUserAvatar(finalAvatar);
+        
+        if (!sessionStorage.getItem('hasWelcomed')) {
+          setWelcomeModal(`Selamat datang, ${finalName}!`);
+          sessionStorage.setItem('hasWelcomed', 'true');
+          setTimeout(() => {
+            setWelcomeModal(null);
+          }, 3500);
+        }
       } catch (err) {
         console.error('Error syncing profile:', err);
       }
@@ -86,6 +215,55 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     };
   }, []);
 
+  useEffect(() => {
+    const channel = supabase.channel('admin-broadcasts');
+
+    channel.on('broadcast', { event: 'admin_action' }, (payload) => {
+      addManualNotification(payload.payload.message);
+    }).subscribe();
+
+    const handleAppNotify = (e: any) => {
+      if (e.detail) {
+        addManualNotification(`Anda ${e.detail}`);
+        
+        channel.send({
+          type: 'broadcast',
+          event: 'admin_action',
+          payload: { message: `${adminNameRef.current} ${e.detail}` }
+        });
+      }
+    };
+    window.addEventListener('app-notify', handleAppNotify);
+
+    const dbChannel = supabase.channel('schema-db-changes')
+      .on('postgres_changes', { event: '*', schema: 'public' }, (payload) => {
+        let tableName = payload.table;
+        if (tableName === 'profil_admin') return;
+
+        let actionStr = '';
+        if (payload.eventType === 'INSERT') actionStr = 'ditambahkan ke';
+        else if (payload.eventType === 'UPDATE') actionStr = 'diperbarui di';
+        else if (payload.eventType === 'DELETE') actionStr = 'dihapus dari';
+        
+        if (tableName === 'archive_kegiatan') tableName = 'Archive';
+        else if (tableName === 'events') tableName = 'Event';
+        else if (tableName === 'stok') tableName = 'Stok';
+        else if (tableName === 'jadwal_distribusi') tableName = 'Jadwal Distribusi';
+        else if (tableName === 'stok_buah_susu') tableName = 'Stok Buah & Susu';
+        else if (tableName === 'contact_messages') tableName = 'Laporan Darurat';
+
+        const msg = `Sistem: Data baru saja ${actionStr} tabel ${tableName}.`;
+        addManualNotification(msg);
+      })
+      .subscribe();
+      
+    return () => { 
+      window.removeEventListener('app-notify', handleAppNotify);
+      supabase.removeChannel(channel); 
+      supabase.removeChannel(dbChannel); 
+    };
+  }, []);
+
   const handleSendInvite = async () => {
     if (!inviteEmail) {
       alert('Silakan masukkan email terlebih dahulu.');
@@ -101,7 +279,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       const data = await response.json();
 
       if (response.ok) {
-        alert(`Undangan berhasil dikirim ke ${inviteEmail}`);
+        window.dispatchEvent(new CustomEvent('app-notify', { detail: `telah mengundang admin baru dengan email: ${inviteEmail}` }));
         setIsInviteModalOpen(false);
         setInviteEmail('');
       } else {
@@ -109,7 +287,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       }
     } catch (error) {
       console.error('Error saat mengirim undangan:', error);
-      alert('Terjadi kesalahan. Silakan coba lagi nanti.');
+      alert('Terjadi kesalahan saat mengirim undangan.');
     }
   };
 
@@ -121,7 +299,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           console.error("Logout error:", error);
           alert("Gagal logout: " + error.message);
         } else {
-
+          sessionStorage.removeItem('hasWelcomed');
           window.location.href = '/';
         }
       }
@@ -247,7 +425,62 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
 
           <div className="flex items-center gap-[16px] md:gap-[22px] text-[24px] text-[#6c7d94] dark:text-[#8892b0]">
-            <i className="fa-regular fa-bell cursor-pointer transition hover:text-[#173f97] dark:hover:text-white" onClick={() => alert("Tidak ada notifikasi baru.")}></i>
+            <div className="relative" ref={notifRef}>
+              <div className="relative cursor-pointer" onClick={async () => {
+                  if (!showNotifications) {
+                    setNotifications(notifications.map(n => ({ ...n, read: true })));
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (session?.user) {
+                      supabase.from('notifikasi').update({ terbaca: true }).eq('admin_id', session.user.id).eq('terbaca', false).then();
+                    }
+                  }
+                  setShowNotifications(!showNotifications);
+                }}>
+                <i className={`fa-regular fa-bell transition ${showNotifications ? 'text-[#173f97] dark:text-white' : 'hover:text-[#173f97] dark:hover:text-white'}`}></i>
+                {notifications.filter(n => !n.read).length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-[#ef4444] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
+                    {notifications.filter(n => !n.read).length}
+                  </span>
+                )}
+              </div>
+              
+              {showNotifications && (
+                <div className="absolute right-0 top-full mt-3 z-50">
+                  <div className="w-80 bg-white dark:bg-[#112240] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,.15)] border border-[#e5ebf2] dark:border-[#233554] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="px-4 py-3 border-b border-[#e5ebf2] dark:border-[#233554] bg-[#f4f7fb]/50 dark:bg-[#0a192f]/50 flex justify-between items-center">
+                      <p className="text-sm font-bold text-[#08284d] dark:text-[#ccd6f6]">Notifikasi</p>
+                      <button 
+                        onClick={async () => { 
+                          setNotifications([]); 
+                          setShowNotifications(false); 
+                          const { data: { session } } = await supabase.auth.getSession();
+                          if (session?.user) {
+                            supabase.from('notifikasi').delete().eq('admin_id', session.user.id).then();
+                          }
+                        }}
+                        className="text-xs text-[#173f97] dark:text-[#4a72d1] hover:underline font-semibold"
+                      >
+                        Bersihkan
+                      </button>
+                    </div>
+                    <div className="max-h-64 overflow-y-auto">
+                      {notifications.length === 0 ? (
+                        <div className="p-6 text-center text-sm text-[#6c7d94] dark:text-[#8892b0]">
+                          Tidak ada notifikasi baru.
+                        </div>
+                      ) : (
+                        notifications.map(notif => (
+                          <div key={notif.id} className="p-4 border-b border-[#e5ebf2] dark:border-[#233554] hover:bg-[#f4f7fb] dark:hover:bg-[#1e2d4a] transition-colors">
+                            <p className="text-sm text-[#08284d] dark:text-[#ccd6f6] mb-1">{notif.message}</p>
+                            <p className="text-[10px] text-[#6c7d94] dark:text-[#8892b0]">{notif.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
             <div
               className="relative"
               ref={settingsRef}
@@ -271,6 +504,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       onClick={() => {
                         setIsSettingsClicked(false);
                         setIsSettingsHovered(false);
+                        setIsAccountModalOpen(true);
+                      }}
+                    >
+                      <div className="w-8 h-8 rounded-full bg-[#eef2f7] dark:bg-[#233554] flex items-center justify-center text-[#173f97] dark:text-[#4a72d1]">
+                        <i className="fa-solid fa-user-pen text-xs"></i>
+                      </div>
+                      Pengaturan Akun
+                    </div>
+                    <div
+                      className="px-4 py-2.5 hover:bg-[#f4f7fb] dark:hover:bg-[#1e2d4a] cursor-pointer text-sm font-semibold text-[#08284d] dark:text-[#ccd6f6] flex items-center gap-3 transition-colors mx-2 rounded-lg"
+                      onClick={() => {
+                        setIsSettingsClicked(false);
+                        setIsSettingsHovered(false);
                         setIsInviteModalOpen(true);
                       }}
                     >
@@ -284,7 +530,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               )}
             </div>
 
-            <div className="w-[42px] h-[42px] rounded-full overflow-hidden cursor-pointer border-[2px] border-white dark:border-[#233554] shadow-[0_6px_18px_rgba(0,0,0,.12)] bg-cover bg-center bg-no-repeat shrink-0"
+            <div className="w-[42px] h-[42px] rounded-full overflow-hidden cursor-pointer border-[2px] border-white dark:border-[#233554] shadow-[0_6px_18px_rgba(0,0,0,.12)] bg-cover bg-center bg-no-repeat shrink-0 transition-transform hover:scale-105"
+                 onClick={() => setIsFullViewAvatarOpen(true)}
                  style={{ backgroundImage: `url('${userAvatar || '/assets/profil.jpg'}')` }}>
             </div>
 
@@ -302,6 +549,136 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
 
       </div>
+
+      {isAccountModalOpen && (
+        <div className="fixed inset-0 bg-black/60 z-[100] backdrop-blur-md flex items-center justify-center p-4 transition-opacity">
+          <div className="bg-white dark:bg-[#112240] w-full max-w-md rounded-2xl shadow-2xl overflow-hidden transform transition-all scale-100">
+            <div className="px-6 py-4 border-b border-[#e5ebf2] dark:border-[#233554] flex justify-between items-center bg-[#f4f7fb]/50 dark:bg-[#0a192f]/50">
+              <h3 className="text-lg font-bold text-[#08284d] dark:text-[#ccd6f6] flex items-center gap-2">
+                <i className="fa-solid fa-user-gear text-[#173f97] dark:text-[#4a72d1]"></i> Pengaturan Akun
+              </h3>
+              <button
+                onClick={() => setIsAccountModalOpen(false)}
+                className="text-[#6c7d94] dark:text-[#8892b0] hover:text-[#ef4444] dark:hover:text-[#ef4444] transition-colors bg-white dark:bg-[#112240] w-8 h-8 rounded-full flex items-center justify-center shadow-sm border border-transparent hover:border-[#ef4444]/20"
+              >
+                <i className="fa-solid fa-xmark text-lg"></i>
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="flex flex-col items-center mb-6">
+                <div 
+                  className="relative w-[80px] h-[80px] rounded-full border-4 border-[#f4f7fb] dark:border-[#233554] shadow-md bg-cover bg-center bg-no-repeat mb-3 cursor-pointer group"
+                  style={{ backgroundImage: `url('${previewAvatar || '/assets/profil.jpg'}')` }}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i className="fa-solid fa-camera text-white"></i>
+                  </div>
+                </div>
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  className="hidden" 
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setEditUserAvatar(file);
+                      setPreviewAvatar(URL.createObjectURL(file));
+                    }
+                  }}
+                />
+                <p className="text-xs font-semibold text-[#166534] dark:text-[#22c55e] bg-[#dcfce7] dark:bg-[#14532d] px-3 py-1 rounded-full flex items-center gap-1 mt-1 border border-[#bbf7d0] dark:border-[#166534]">
+                  Admin
+                </p>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-[#08284d] dark:text-[#ccd6f6] mb-2">Nama Admin</label>
+                <input
+                  type="text"
+                  value={editAdminName}
+                  onChange={(e) => setEditAdminName(e.target.value)}
+                  className="w-full bg-white dark:bg-[#0a192f] border border-[#e5ebf2] dark:border-[#233554] text-[#08284d] dark:text-[#ccd6f6] rounded-xl px-4 py-3 focus:outline-none focus:border-[#173f97] transition-colors"
+                />
+              </div>
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-[#08284d] dark:text-[#ccd6f6] mb-2">Email</label>
+                <input
+                  type="email"
+                  value={adminEmail}
+                  disabled
+                  className="w-full bg-[#f4f7fb] dark:bg-[#0a192f] border border-[#e5ebf2] dark:border-[#233554] text-[#6c7d94] dark:text-[#8892b0] rounded-xl px-4 py-3 opacity-70 cursor-not-allowed"
+                />
+              </div>
+              <div className="flex justify-between gap-3 pt-2 border-t border-[#e5ebf2] dark:border-[#233554] pt-4">
+                <button
+                  onClick={() => setIsAccountModalOpen(false)}
+                  className="px-5 py-2.5 rounded-xl text-sm font-bold text-[#6c7d94] bg-[#f4f7fb] hover:bg-[#e5ebf2] dark:bg-[#1e2d4a] dark:text-[#ccd6f6] dark:hover:bg-[#233554] transition-colors flex-1"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleProfileUpdate}
+                  disabled={isUpdatingAccount || !editAdminName.trim()}
+                  className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-[#173f97] hover:bg-[#123175] transition-colors shadow-lg shadow-[#173f97]/20 flex-1 disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isUpdatingAccount ? (
+                    <><i className="fa-solid fa-spinner fa-spin"></i> Menyimpan...</>
+                  ) : (
+                    'Simpan'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {toastNotification && (
+        <div className="fixed top-20 right-6 z-[110] animate-in slide-in-from-right-8 fade-in duration-300">
+          <div className="bg-white dark:bg-[#112240] border-l-4 border-[#173f97] dark:border-[#4a72d1] rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-4 flex items-start gap-3 max-w-sm">
+            <div className="mt-0.5 text-[#173f97] dark:text-[#4a72d1]">
+              <i className="fa-solid fa-circle-info"></i>
+            </div>
+            <div className="flex-1">
+              <h4 className="text-sm font-bold text-[#08284d] dark:text-[#ccd6f6]">Notifikasi Baru</h4>
+              <p className="text-sm text-[#6c7d94] dark:text-[#8892b0] mt-1">{toastNotification.message}</p>
+            </div>
+            <button 
+              onClick={() => setToastNotification(null)}
+              className="text-[#6c7d94] hover:text-[#ef4444] transition-colors"
+            >
+              <i className="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {welcomeModal && (
+        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[200] pointer-events-none animate-in slide-in-from-top-8 fade-in duration-500">
+          <div className="bg-white/80 dark:bg-[#112240]/80 backdrop-blur-md px-8 py-4 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.15)] flex items-center justify-center border border-[#e5ebf2]/50 dark:border-[#233554]/50">
+            <h2 className="text-sm md:text-base font-extrabold text-[#08284d] dark:text-white font-['Plus_Jakarta_Sans',sans-serif]">
+              {welcomeModal}
+            </h2>
+          </div>
+        </div>
+      )}
+
+      {isFullViewAvatarOpen && (
+        <div className="fixed inset-0 bg-black/80 z-[300] backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setIsFullViewAvatarOpen(false)}>
+          <button 
+            className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors p-2"
+            onClick={() => setIsFullViewAvatarOpen(false)}
+          >
+            <i className="fa-solid fa-xmark text-3xl"></i>
+          </button>
+          <div 
+            className="w-full max-w-[400px] aspect-square rounded-full md:rounded-3xl shadow-2xl bg-cover bg-center bg-no-repeat border-4 border-white/20 animate-in zoom-in-95 duration-200"
+            style={{ backgroundImage: `url('${userAvatar || '/assets/profil.jpg'}')` }}
+            onClick={(e) => e.stopPropagation()}
+          ></div>
+        </div>
+      )}
 
     </div>
   );
