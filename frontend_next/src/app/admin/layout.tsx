@@ -148,7 +148,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     const syncProfile = async (user: any) => {
       try {
-        const { data: existing } = await supabase.from('profil_admin').select('*').eq('id', user.id).single();
+        const { data: existing, error: selectErr } = await supabase.from('profil_admin').select('*').eq('id', user.id).maybeSingle();
+        if (selectErr) console.error("Error get profil:", selectErr);
         
         let finalName = '';
         let finalAvatar = null;
