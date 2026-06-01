@@ -62,7 +62,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
-      supabase.from('notifikasi').insert([{ admin_id: session.user.id, pesan: message }]).then();
+      supabase.from('notifikasi').insert([{ admin_id: session.user.id, pesan: message, terbaca: false }]).then();
     }
   };
 
@@ -74,7 +74,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           id: n.id,
           message: n.pesan,
           time: new Date(n.created_at),
-          read: true
+          read: n.terbaca
         })));
       }
     };
@@ -426,9 +426,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           <div className="flex items-center gap-[16px] md:gap-[22px] text-[24px] text-[#6c7d94] dark:text-[#8892b0]">
             <div className="relative" ref={notifRef}>
-              <div className="relative cursor-pointer" onClick={() => {
+              <div className="relative cursor-pointer" onClick={async () => {
+                  if (!showNotifications) {
+                    setNotifications(notifications.map(n => ({ ...n, read: true })));
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (session?.user) {
+                      supabase.from('notifikasi').update({ terbaca: true }).eq('admin_id', session.user.id).eq('terbaca', false).then();
+                    }
+                  }
                   setShowNotifications(!showNotifications);
-                  setNotifications(prev => prev.map(n => ({...n, read: true})));
                 }}>
                 <i className={`fa-regular fa-bell transition ${showNotifications ? 'text-[#173f97] dark:text-white' : 'hover:text-[#173f97] dark:hover:text-white'}`}></i>
                 {notifications.filter(n => !n.read).length > 0 && (
@@ -444,7 +450,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <div className="px-4 py-3 border-b border-[#e5ebf2] dark:border-[#233554] bg-[#f4f7fb]/50 dark:bg-[#0a192f]/50 flex justify-between items-center">
                       <p className="text-sm font-bold text-[#08284d] dark:text-[#ccd6f6]">Notifikasi</p>
                       <button 
-                        onClick={() => { setNotifications([]); setShowNotifications(false); }}
+                        onClick={async () => { 
+                          setNotifications([]); 
+                          setShowNotifications(false); 
+                          const { data: { session } } = await supabase.auth.getSession();
+                          if (session?.user) {
+                            supabase.from('notifikasi').delete().eq('admin_id', session.user.id).then();
+                          }
+                        }}
                         className="text-xs text-[#173f97] dark:text-[#4a72d1] hover:underline font-semibold"
                       >
                         Bersihkan
