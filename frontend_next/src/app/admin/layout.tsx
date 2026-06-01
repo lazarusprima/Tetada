@@ -62,7 +62,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
-      supabase.from('notifikasi').insert([{ admin_id: session.user.id, message }]).then();
+      supabase.from('notifikasi').insert([{ admin_id: session.user.id, pesan: message }]).then();
     }
   };
 
@@ -72,7 +72,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       if (data) {
         setNotifications(data.map((n: any) => ({
           id: n.id,
-          message: n.message,
+          message: n.pesan,
           time: new Date(n.created_at),
           read: true
         })));
@@ -106,13 +106,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         const fileExt = editUserAvatar.name.split('.').pop();
         const fileName = `${session.user.id}-${Date.now()}.${fileExt}`;
         const { error: uploadError, data: uploadData } = await supabase.storage
-          .from('gambar')
+          .from('pfp')
           .upload(`avatars/${fileName}`, editUserAvatar, { upsert: true });
           
         if (uploadError) throw uploadError;
         
         const { data: publicUrlData } = supabase.storage
-          .from('gambar')
+          .from('pfp')
           .getPublicUrl(uploadData.path);
         finalAvatar = publicUrlData.publicUrl;
       }
