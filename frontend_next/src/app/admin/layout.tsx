@@ -54,12 +54,32 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const isSettingsOpen = isSettingsHovered || isSettingsClicked;
 
-  const addManualNotification = (message: string) => {
+  const addManualNotification = async (message: string) => {
     const newNotif = { id: Date.now(), message, time: new Date(), read: false };
     setNotifications(prev => [newNotif, ...prev]);
     setToastNotification(newNotif);
     setTimeout(() => { setToastNotification(null); }, 5000);
+    
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      supabase.from('notifikasi').insert([{ admin_id: session.user.id, message }]).then();
+    }
   };
+
+  useEffect(() => {
+    const fetchNotifs = async () => {
+      const { data } = await supabase.from('notifikasi').select('*').order('created_at', { ascending: false }).limit(30);
+      if (data) {
+        setNotifications(data.map((n: any) => ({
+          id: n.id,
+          message: n.message,
+          time: new Date(n.created_at),
+          read: true
+        })));
+      }
+    };
+    fetchNotifs();
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -110,13 +130,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       setUserAvatar(finalAvatar);
       setIsAccountModalOpen(false);
       addManualNotification("Anda telah berhasil memperbarui profil akun.");
-      
-      const channel = supabase.channel('admin-broadcasts');
-      channel.send({
-        type: 'broadcast',
-        event: 'admin_action',
-        payload: { message: `${editAdminName} telah memperbarui profil akunnya.` }
-      });
 
     } catch (err: any) {
       alert('Gagal mengupdate profil: ' + err.message);
