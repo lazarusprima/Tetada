@@ -149,15 +149,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const syncProfile = async (user: any) => {
       try {
         const { data: existing, error: selectErr } = await supabase.from('profil_admin').select('*').eq('id', user.id).maybeSingle();
-        if (selectErr) console.error("Error get profil:", selectErr);
         
         let finalName = '';
         let finalAvatar = null;
 
-        if (existing) {
+        if (selectErr) {
+          console.error("Error get profil (RLS mungkin belum diatur untuk SELECT):", selectErr);
+          // Jika gagal select karena RLS, JANGAN upsert/timpa data di database!
+          // Gunakan saja data default dari user metadata untuk tampilan sementara.
+          const meta = user.user_metadata;
+          finalAvatar = meta?.avatar_url || meta?.picture || user.identities?.[0]?.identity_data?.avatar_url || user.identities?.[0]?.identity_data?.picture || null;
+          finalName = meta?.full_name || meta?.name || user.email?.split('@')[0] || 'Admin';
+        } else if (existing) {
+          // Data ditemukan di database
           finalName = existing.nama;
           finalAvatar = existing.avatar_url;
         } else {
+          // User benar-benar baru, masukkan data default
           const meta = user.user_metadata;
           finalAvatar = meta?.avatar_url || meta?.picture || user.identities?.[0]?.identity_data?.avatar_url || user.identities?.[0]?.identity_data?.picture || null;
           finalName = meta?.full_name || meta?.name || user.email?.split('@')[0] || 'Admin';
