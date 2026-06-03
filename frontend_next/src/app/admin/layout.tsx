@@ -287,15 +287,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       const data = await response.json();
 
       if (response.ok) {
-        window.dispatchEvent(new CustomEvent('app-notify', { detail: `telah mengundang admin baru dengan email: ${inviteEmail}` }));
+        window.dispatchEvent(new CustomEvent('app-notify', { detail: `telah menambahkan admin baru dengan email: ${inviteEmail}` }));
         setIsInviteModalOpen(false);
         setInviteEmail('');
+
+        if (data.isExisting) {
+          alert(data.message);
+        } else {
+          alert(`Sukses menambahkan Admin Baru!\n\nEmail: ${inviteEmail}\nPassword Sementara: ${data.tempPassword}\n\nSilakan berikan password sementara ini kepada admin baru untuk masuk.`);
+        }
       } else {
-        alert(`Gagal mengirim undangan: ${data.error}`);
+        alert(`Gagal menambahkan admin: ${data.error}`);
       }
     } catch (error) {
-      console.error('Error saat mengirim undangan:', error);
-      alert('Terjadi kesalahan saat mengirim undangan.');
+      console.error('Error saat menambahkan admin:', error);
+      alert('Terjadi kesalahan saat menambahkan admin.');
     }
   };
 

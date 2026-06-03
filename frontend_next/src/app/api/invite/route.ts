@@ -19,14 +19,58 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email wajib diisi' }, { status: 400 });
     }
 
-    const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email);
+    // Generate temporary password
+    const tempPassword = 'TetadaAdmin' + Math.random().toString(36).substring(2, 8) + '!';
+
+    // Buat user di Auth secara langsung
+    const { data, error } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      email_confirm: true,
+      password: tempPassword,
+    });
 
     if (error) {
-      console.error('Error mengundang user:', error);
+      // Jika user sudah terdaftar di auth, jadikan admin dengan meng-upsert profil_admin
+      if (error.message.toLowerCase().includes('already') || error.status === 422) {
+        const { data: usersData, error: getUserError } = await supabaseAdmin.auth.admin.listUsers();
+        if (getUserError) {
+          return NextResponse.json({ error: getUserError.message }, { status: 400 });
+        }
+        const existingUser = usersData.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+        if (existingUser) {
+          const { error: profileError } = await supabaseAdmin.from('profil_admin').upsert({
+            id: existingUser.id,
+            email: email,
+            nama: email.split('@')[0],
+          }, { onConflict: 'email' });
+
+          if (profileError) {
+            return NextResponse.json({ error: profileError.message }, { status: 400 });
+          }
+
+          return NextResponse.json({ 
+            success: true, 
+            message: 'User sudah terdaftar sebelumnya, berhasil ditambahkan sebagai Admin.', 
+            isExisting: true 
+          });
+        }
+      }
+      console.error('Error membuat user:', error);
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    return NextResponse.json({ success: true, data });
+    // Masukkan ke profil_admin untuk user baru
+    const { error: profileError } = await supabaseAdmin.from('profil_admin').upsert({
+      id: data.user.id,
+      email: email,
+      nama: email.split('@')[0],
+    }, { onConflict: 'email' });
+
+    if (profileError) {
+      return NextResponse.json({ error: profileError.message }, { status: 400 });
+    }
+
+    return NextResponse.json({ success: true, tempPassword });
   } catch (err: any) {
     console.error('Terjadi kesalahan server:', err);
     return NextResponse.json({ error: 'Terjadi kesalahan pada server' }, { status: 500 });
