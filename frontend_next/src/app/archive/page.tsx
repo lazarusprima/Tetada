@@ -119,7 +119,9 @@ export default function ArchivePage() {
           <aside className="lg:w-[300px] flex-shrink-0 lg:sticky lg:top-[120px] h-fit flex flex-col gap-6">
             <div className="bg-white rounded-[16px] p-[12px] shadow-sm flex items-center w-full">
               <div className="relative w-full">
-                <span className="absolute left-[16px] top-[50%] -translate-y-1/2 text-gray-400">🔍</span>
+                <span className="absolute left-[16px] top-[50%] -translate-y-1/2 text-gray-400 text-[13px]">
+                  <i className="fa-solid fa-magnifying-glass"></i>
+                </span>
                 <input 
                   type="text" 
                   placeholder="Cari arsip..." 

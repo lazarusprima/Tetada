@@ -122,8 +122,8 @@ export default function AdminArchive() {
 
         <div className="flex flex-col sm:flex-row items-center gap-[16px] w-full sm:w-auto">
           <div className="relative w-full sm:w-[300px]">
-            <span className="absolute left-[12px] top-[50%] -translate-y-1/2 text-gray-400 dark:text-gray-500">
-              🔍
+            <span className="absolute left-[14px] top-[50%] -translate-y-1/2 text-gray-400 dark:text-gray-500 text-[13px]">
+              <i className="fa-solid fa-magnifying-glass"></i>
             </span>
             <input
               type="text"
