@@ -654,8 +654,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
               
               <div className="border-t border-[#e5ebf2] dark:border-[#233554] my-5 pt-4">
-                <h4 className="text-sm font-bold text-[#08284d] dark:text-[#ccd6f6] mb-4 flex items-center gap-2">
-                  <i className="fa-solid fa-key text-xs text-[#173f97] dark:text-[#4a72d1]"></i> Ubah Password
+                <h4 className="text-sm font-bold text-[#08284d] dark:text-[#ccd6f6] mb-4">
+                  Ubah Password
                 </h4>
                 
                 <div className="mb-4">
