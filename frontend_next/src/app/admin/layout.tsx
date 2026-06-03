@@ -122,7 +122,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         email: session.user.email,
         nama: editAdminName,
         avatar_url: finalAvatar
-      }, { onConflict: 'id' });
+      }, { onConflict: 'email' });
 
       if (error) throw error;
 
@@ -175,7 +175,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             email: user.email,
             nama: finalName,
             avatar_url: finalAvatar
-          }, { onConflict: 'id' });
+          }, { onConflict: 'email' });
         }
         
         setAdminName(finalName);
