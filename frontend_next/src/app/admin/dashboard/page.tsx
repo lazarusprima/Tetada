@@ -25,35 +25,33 @@ export default function Dashboard() {
         }
       }
 
+      const now = new Date();
+      const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
       const { data } = await supabase
         .from('jadwal_distribusi')
         .select('*')
-        .ilike('status', 'aktif')
+        .eq('tanggal_distribusi', todayStr)
         .order('tanggal_distribusi', { ascending: false })
         .limit(1)
         .maybeSingle();
         
       if (data) {
-        const scheduleDate = new Date(data.tanggal_distribusi);
-        const today = new Date();
-        if (scheduleDate.getDate() === today.getDate() &&
-            scheduleDate.getMonth() === today.getMonth() &&
-            scheduleDate.getFullYear() === today.getFullYear()) {
-          setSchedule(data);
-          setStock(data.stok_paket_sisa || 0);
-          setMaxStock(data.stok_paket_total || 0);
-          
-          if (data.created_at) {
-            const d = new Date(data.created_at);
-            const h = String(d.getHours()).padStart(2, "0");
-            const m = String(d.getMinutes()).padStart(2, "0");
-            setTime(`${h}.${m} WIB`);
-          }
-        } else {
-          setStock(0);
-          setMaxStock(0);
-          setTime('--.-- WIB');
+        setSchedule(data);
+        setStock(data.stok_paket_sisa || 0);
+        setMaxStock(data.stok_paket_total || 0);
+        
+        if (data.created_at) {
+          const d = new Date(data.created_at);
+          const h = String(d.getHours()).padStart(2, "0");
+          const m = String(d.getMinutes()).padStart(2, "0");
+          setTime(`${h}.${m} WIB`);
         }
+      } else {
+        setSchedule(null);
+        setStock(0);
+        setMaxStock(0);
+        setTime('--.-- WIB');
       }
 
       const { data: stokData } = await supabase

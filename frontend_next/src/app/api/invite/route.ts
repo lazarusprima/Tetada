@@ -19,10 +19,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email wajib diisi' }, { status: 400 });
     }
 
-    // Generate temporary password
     const tempPassword = 'TetadaAdmin' + Math.random().toString(36).substring(2, 8) + '!';
 
-    // Buat user di Auth secara langsung
     const { data, error } = await supabaseAdmin.auth.admin.createUser({
       email,
       email_confirm: true,
@@ -30,7 +28,6 @@ export async function POST(request: Request) {
     });
 
     if (error) {
-      // Jika user sudah terdaftar di auth, jadikan admin dengan meng-upsert profil_admin
       if (error.message.toLowerCase().includes('already') || error.status === 422) {
         const { data: usersData, error: getUserError } = await supabaseAdmin.auth.admin.listUsers();
         if (getUserError) {
@@ -59,7 +56,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    // Masukkan ke profil_admin untuk user baru
     const { error: profileError } = await supabaseAdmin.from('profil_admin').upsert({
       id: data.user.id,
       email: email,
