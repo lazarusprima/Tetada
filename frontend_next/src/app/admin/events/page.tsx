@@ -96,7 +96,7 @@ export default function AdminEventsPage() {
                 placeholder="Cari event..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="w-full bg-[#F0F2F5] dark:bg-[#0a192f] border border-[#E2E8F0] dark:border-[#233554] rounded-[8px] px-[16px] py-[10px] text-[11.3px] text-[#A0AEC0] dark:text-white focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-[#F0F2F5] dark:bg-[#0a192f] border border-[#E2E8F0] dark:border-[#233554] rounded-[8px] pl-[36px] pr-[16px] py-[10px] text-[11.3px] text-[#A0AEC0] dark:text-white focus:outline-none focus:border-blue-500 transition-colors"
               />
             </div>
             <Link
