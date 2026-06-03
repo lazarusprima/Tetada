@@ -28,11 +28,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isFullViewAvatarOpen, setIsFullViewAvatarOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
   useEffect(() => {
     if (isAccountModalOpen) {
       setEditAdminName(adminName);
       setPreviewAvatar(userAvatar);
       setEditUserAvatar(null);
+      setNewPassword('');
+      setConfirmPassword('');
+      setShowNewPassword(false);
+      setShowConfirmPassword(false);
     }
   }, [isAccountModalOpen, adminName, userAvatar]);
   
@@ -100,6 +109,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) throw new Error('Not logged in');
 
+      // Update password if fields are filled
+      if (newPassword) {
+        if (newPassword.length < 6) {
+          throw new Error('Password baru minimal 6 karakter.');
+        }
+        if (newPassword !== confirmPassword) {
+          throw new Error('Password baru dan konfirmasi tidak cocok.');
+        }
+        const { error: passwordError } = await supabase.auth.updateUser({
+          password: newPassword
+        });
+        if (passwordError) throw passwordError;
+      }
+
       let finalAvatar = previewAvatar;
       
       if (editUserAvatar) {
@@ -129,7 +152,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       setAdminName(editAdminName);
       setUserAvatar(finalAvatar);
       setIsAccountModalOpen(false);
-      addManualNotification("Anda telah berhasil memperbarui profil akun.");
+      
+      if (newPassword) {
+        addManualNotification("Anda telah berhasil memperbarui profil dan password.");
+      } else {
+        addManualNotification("Anda telah berhasil memperbarui profil akun.");
+      }
 
     } catch (err: any) {
       alert('Gagal mengupdate profil: ' + err.message);
@@ -566,7 +594,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {isAccountModalOpen && (
         <div className="fixed inset-0 bg-black/60 z-[100] backdrop-blur-md flex items-center justify-center p-4 transition-opacity">
-          <div className="bg-white dark:bg-[#112240] w-full max-w-md rounded-2xl shadow-2xl overflow-hidden transform transition-all scale-100">
+          <div className="bg-white dark:bg-[#112240] w-full max-w-md rounded-2xl shadow-2xl overflow-hidden transform transition-all scale-100 max-h-[90vh] flex flex-col">
             <div className="px-6 py-4 border-b border-[#e5ebf2] dark:border-[#233554] flex justify-between items-center bg-[#f4f7fb]/50 dark:bg-[#0a192f]/50">
               <h3 className="text-lg font-bold text-[#08284d] dark:text-[#ccd6f6] flex items-center gap-2">
                 <i className="fa-solid fa-user-gear text-[#173f97] dark:text-[#4a72d1]"></i> Pengaturan Akun
@@ -578,7 +606,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <i className="fa-solid fa-xmark text-lg"></i>
               </button>
             </div>
-            <div className="p-6">
+            <div className="p-6 overflow-y-auto flex-1">
               <div className="flex flex-col items-center mb-6">
                 <div 
                   className="relative w-[80px] h-[80px] rounded-full border-4 border-[#f4f7fb] dark:border-[#233554] shadow-md bg-cover bg-center bg-no-repeat mb-3 cursor-pointer group"
@@ -615,7 +643,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   className="w-full bg-white dark:bg-[#0a192f] border border-[#e5ebf2] dark:border-[#233554] text-[#08284d] dark:text-[#ccd6f6] rounded-xl px-4 py-3 focus:outline-none focus:border-[#173f97] transition-colors"
                 />
               </div>
-              <div className="mb-6">
+              <div className="mb-4">
                 <label className="block text-sm font-semibold text-[#08284d] dark:text-[#ccd6f6] mb-2">Email</label>
                 <input
                   type="email"
@@ -624,7 +652,60 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   className="w-full bg-[#f4f7fb] dark:bg-[#0a192f] border border-[#e5ebf2] dark:border-[#233554] text-[#6c7d94] dark:text-[#8892b0] rounded-xl px-4 py-3 opacity-70 cursor-not-allowed"
                 />
               </div>
-              <div className="flex justify-between gap-3 pt-2 border-t border-[#e5ebf2] dark:border-[#233554] pt-4">
+              
+              <div className="border-t border-[#e5ebf2] dark:border-[#233554] my-5 pt-4">
+                <h4 className="text-sm font-bold text-[#08284d] dark:text-[#ccd6f6] mb-4 flex items-center gap-2">
+                  <i className="fa-solid fa-key text-xs text-[#173f97] dark:text-[#4a72d1]"></i> Ubah Password
+                </h4>
+                
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-[#08284d] dark:text-[#ccd6f6] mb-2">
+                    Password Baru <span className="text-xs font-normal text-[#6c7d94] dark:text-[#8892b0]">(Kosongkan jika tidak ingin diubah)</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showNewPassword ? "text" : "password"}
+                      placeholder="Masukkan password baru (min. 6 karakter)"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="w-full bg-white dark:bg-[#0a192f] border border-[#e5ebf2] dark:border-[#233554] text-[#08284d] dark:text-[#ccd6f6] rounded-xl px-4 py-3 pr-10 focus:outline-none focus:border-[#173f97] transition-colors"
+                    />
+                    {newPassword && (
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6c7d94] hover:text-[#08284d] transition-colors"
+                      >
+                        <i className={`fa-solid ${showNewPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mb-2">
+                  <label className="block text-sm font-semibold text-[#08284d] dark:text-[#ccd6f6] mb-2">Konfirmasi Password Baru</label>
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="Masukkan ulang password baru"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="w-full bg-white dark:bg-[#0a192f] border border-[#e5ebf2] dark:border-[#233554] text-[#08284d] dark:text-[#ccd6f6] rounded-xl px-4 py-3 pr-10 focus:outline-none focus:border-[#173f97] transition-colors"
+                    />
+                    {confirmPassword && (
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6c7d94] hover:text-[#08284d] transition-colors"
+                      >
+                        <i className={`fa-solid ${showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-between gap-3 border-t border-[#e5ebf2] dark:border-[#233554] pt-4 mt-6">
                 <button
                   onClick={() => setIsAccountModalOpen(false)}
                   className="px-5 py-2.5 rounded-xl text-sm font-bold text-[#6c7d94] bg-[#f4f7fb] hover:bg-[#e5ebf2] dark:bg-[#1e2d4a] dark:text-[#ccd6f6] dark:hover:bg-[#233554] transition-colors flex-1"
