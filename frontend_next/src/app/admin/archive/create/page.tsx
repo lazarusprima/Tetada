@@ -69,6 +69,8 @@ export default function CreateArchivePage() {
     }
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
       const { error } = await supabase
         .from('archive_kegiatan')
         .insert([{
@@ -76,7 +78,9 @@ export default function CreateArchivePage() {
           description: formData.description,
           category: formData.category || 'UMUM',
           year: formData.year,
-          image_url: uploadedUrl
+          date_month: formData.date_month,
+          image_url: uploadedUrl,
+          created_by: session?.user?.id
         }]);
 
       if (error) throw error;
