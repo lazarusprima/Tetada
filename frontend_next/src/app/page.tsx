@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import Link from 'next/link';
 
 export default function Home() {
   const [homeStock, setHomeStock] = useState(0);
@@ -22,11 +23,11 @@ export default function Home() {
         .order('tanggal_distribusi', { ascending: false })
         .limit(1)
         .maybeSingle();
-      
+
       if (!error && data) {
         setHomeStock(data.stok_paket_sisa || 0);
         setHomeMaxStock(data.stok_paket_total || 0);
-        
+
         if (data.created_at) {
           const d = new Date(data.created_at);
           const h = String(d.getHours()).padStart(2, "0");
@@ -82,17 +83,17 @@ export default function Home() {
               melalui sistem pemantauan real-time dan respon cepat terintegrasi.
             </p>
             <div className="flex gap-[14px] flex-wrap">
-              <button
-                onClick={() => alert('Form laporan insiden dibuka!')}
-                className="py-[15px] px-[22px] bg-white text-[#06244d] border-none rounded-[12px] font-bold cursor-pointer hover:bg-gray-100 transition"
+              <Link
+                href="/contact#laporan-darurat"
+                className="inline-block py-[15px] px-[22px] bg-white text-[#06244d] border-none rounded-[12px] font-bold cursor-pointer hover:bg-gray-100 transition"
               >
                 Laporkan Insiden
-              </button>
+              </Link>
             </div>
           </div>
 
           <div className="w-full lg:max-w-[430px] aspect-square ml-auto p-[26px] md:p-[34px] rounded-[22px] md:rounded-[28px] relative overflow-hidden text-white border border-white/10 shadow-[0_22px_48px_rgba(0,0,0,.18),0_8px_18px_rgba(0,0,0,.08),inset_0_1px_0_rgba(255,255,255,.08)] bg-cover bg-center bg-no-repeat"
-               style={{ backgroundImage: `linear-gradient(rgba(8,25,55,.06), rgba(8,25,55,.08)), url('/assets/buah_susu.jpg')` }}
+            style={{ backgroundImage: `linear-gradient(rgba(8,25,55,.06), rgba(8,25,55,.08)), url('/assets/buah_susu.jpg')` }}
           >
             <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-black/5 z-0 pointer-events-none rounded-inherit"></div>
             <div className="absolute left-[18px] right-[18px] bottom-[18px] md:left-[24px] md:right-[24px] md:bottom-[24px] h-[64px] md:h-[76px] rounded-[18px] bg-white/5 backdrop-blur-[14px] z-10 pointer-events-none"></div>
@@ -135,7 +136,7 @@ export default function Home() {
               <h2 className="text-[36px] font-bold text-[#06244d] leading-none">Agenda & Workshop</h2>
             </div>
             <a href="/events" className="group flex items-center gap-[8px] text-[#004aad] font-bold text-[14px] hover:translate-x-1 transition-transform">
-              Lihat Semua Event 
+              Lihat Semua Event
               <span className="w-[24px] h-[24px] rounded-full bg-[#004aad]/5 flex items-center justify-center group-hover:bg-[#004aad] group-hover:text-white transition-all">
                 →
               </span>
@@ -155,8 +156,8 @@ export default function Home() {
                   if (openUntil && today > openUntil) {
                     return { badge: 'REGISTRATION CLOSED', badgeClass: 'bg-red-100/90 text-red-700', isClosed: true };
                   }
-                  
-                  switch(status) {
+
+                  switch (status) {
                     case 'Aktif':
                       return { badge: 'OPEN REGISTRATION', badgeClass: 'bg-[#dcfce7]/90 text-[#166534]', isClosed: false };
                     case 'Akan Datang':
@@ -169,12 +170,12 @@ export default function Home() {
                 const config = getBadgeConfig(event.status, event.open_until);
 
                 return (
-                  <div 
-                    key={event.id} 
+                  <div
+                    key={event.id}
                     className="group relative bg-white rounded-[24px] overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-[#f1f5f9] transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] hover:shadow-[0_40px_80px_rgba(0,0,0,0.1)] hover:-translate-y-3 flex flex-col"
                   >
-                    <div 
-                      className="h-[240px] w-full bg-cover bg-center shrink-0 transition-transform duration-1000 group-hover:scale-110" 
+                    <div
+                      className="h-[240px] w-full bg-cover bg-center shrink-0 transition-transform duration-1000 group-hover:scale-110"
                       style={{ backgroundImage: event.gambar ? `url('${event.gambar}')` : 'none' }}
                     >
                       {!event.gambar && (
@@ -189,55 +190,55 @@ export default function Home() {
                       </div>
                     </div>
 
-                  <div className="p-[28px] flex flex-col flex-grow relative z-10 bg-white">
-                    <div className="flex items-center gap-[6px] text-[#94a3b8] text-[11px] font-bold mb-[14px] uppercase tracking-[1.5px]">
-                      {new Date(event.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
-                    </div>
+                    <div className="p-[28px] flex flex-col flex-grow relative z-10 bg-white">
+                      <div className="flex items-center gap-[6px] text-[#94a3b8] text-[11px] font-bold mb-[14px] uppercase tracking-[1.5px]">
+                        {new Date(event.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      </div>
 
-                    <h3 className="text-[20px] font-bold text-[#06244d] leading-[1.4] mb-[12px] group-hover:text-[#004aad] transition-colors">
-                      {event.nama_event}
-                    </h3>
+                      <h3 className="text-[20px] font-bold text-[#06244d] leading-[1.4] mb-[12px] group-hover:text-[#004aad] transition-colors">
+                        {event.nama_event}
+                      </h3>
 
-                    <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-all duration-500 ease-in-out opacity-0 group-hover:opacity-100">
-                      <div className="overflow-hidden">
-                        <div className="pt-[16px] border-t border-[#f1f5f9] mt-[4px]">
-                          <div className="flex flex-col gap-[10px] mb-[20px]">
-                            <div className="flex items-center gap-[10px] text-[#64748b] text-[13px]">
-                              <div className="w-[32px] h-[32px] rounded-full bg-[#f8fafc] flex items-center justify-center text-[#004aad]">
-                                <i className="fa-regular fa-clock text-[14px]"></i>
+                      <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-all duration-500 ease-in-out opacity-0 group-hover:opacity-100">
+                        <div className="overflow-hidden">
+                          <div className="pt-[16px] border-t border-[#f1f5f9] mt-[4px]">
+                            <div className="flex flex-col gap-[10px] mb-[20px]">
+                              <div className="flex items-center gap-[10px] text-[#64748b] text-[13px]">
+                                <div className="w-[32px] h-[32px] rounded-full bg-[#f8fafc] flex items-center justify-center text-[#004aad]">
+                                  <i className="fa-regular fa-clock text-[14px]"></i>
+                                </div>
+                                <span className="font-semibold">{event.waktu ? event.waktu.slice(0, 5) : '00:00'} WIB</span>
                               </div>
-                              <span className="font-semibold">{event.waktu ? event.waktu.slice(0, 5) : '00:00'} WIB</span>
-                            </div>
-                            <div className="flex items-center gap-[10px] text-[#64748b] text-[13px]">
-                              <div className="w-[32px] h-[32px] rounded-full bg-[#f8fafc] flex items-center justify-center text-[#004aad]">
-                                <i className="fa-solid fa-location-dot text-[14px]"></i>
+                              <div className="flex items-center gap-[10px] text-[#64748b] text-[13px]">
+                                <div className="w-[32px] h-[32px] rounded-full bg-[#f8fafc] flex items-center justify-center text-[#004aad]">
+                                  <i className="fa-solid fa-location-dot text-[14px]"></i>
+                                </div>
+                                <span className="line-clamp-1 font-semibold">{event.lokasi || 'TBA'}</span>
                               </div>
-                              <span className="line-clamp-1 font-semibold">{event.lokasi || 'TBA'}</span>
                             </div>
+
+                            <p className="text-[#5e6f84] text-[14px] leading-[1.7] mb-[24px]">
+                              {event.deskripsi || 'Detail kegiatan akan segera diperbarui.'}
+                            </p>
+                            {event.link_pendaftaran && !config.isClosed && (
+                              <a
+                                href={event.link_pendaftaran}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full inline-flex items-center justify-center gap-[12px] py-[16px] px-[20px] bg-[#004aad] text-white rounded-[16px] font-bold text-[14px] hover:bg-[#06244d] shadow-[0_15px_30px_rgba(0,0,0,0.2)] transition-all hover:-translate-y-1"
+                              >
+                                Daftar Sekarang <i className="fa-solid fa-arrow-right text-[12px]"></i>
+                              </a>
+                            )}
+                            {config.isClosed && event.status !== 'Selesai' && (
+                              <div className="w-full py-[16px] px-[20px] bg-gray-100 text-gray-500 rounded-[16px] font-bold text-[14px] text-center border border-gray-200">
+                                Pendaftaran Ditutup
+                              </div>
+                            )}
                           </div>
-                          
-                          <p className="text-[#5e6f84] text-[14px] leading-[1.7] mb-[24px]">
-                            {event.deskripsi || 'Detail kegiatan akan segera diperbarui.'}
-                          </p>
-                          {event.link_pendaftaran && !config.isClosed && (
-                            <a 
-                              href={event.link_pendaftaran}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="w-full inline-flex items-center justify-center gap-[12px] py-[16px] px-[20px] bg-[#004aad] text-white rounded-[16px] font-bold text-[14px] hover:bg-[#06244d] shadow-[0_15px_30px_rgba(0,0,0,0.2)] transition-all hover:-translate-y-1"
-                            >
-                              Daftar Sekarang <i className="fa-solid fa-arrow-right text-[12px]"></i>
-                            </a>
-                          )}
-                          {config.isClosed && event.status !== 'Selesai' && (
-                            <div className="w-full py-[16px] px-[20px] bg-gray-100 text-gray-500 rounded-[16px] font-bold text-[14px] text-center border border-gray-200">
-                              Pendaftaran Ditutup
-                            </div>
-                          )}
                         </div>
                       </div>
                     </div>
-                  </div>
                   </div>
                 );
               })
@@ -255,13 +256,13 @@ export default function Home() {
               Laporkan kerusakan fasilitas, kecelakaan, atau perilaku mencurigakan.
             </p>
             <div className="flex justify-center items-center gap-[14px] flex-wrap mt-[22px]">
-              <button
-                onClick={() => alert('Mode darurat diaktifkan!')}
+              <Link
+                href="/contact"
                 className="py-[15px] px-[20px] bg-[#dc2626] text-white border-none rounded-[12px] font-bold cursor-pointer hover:bg-red-700 transition flex items-center gap-2"
               >
                 <span>✚</span>
                 <span>DARURAT SEKARANG</span>
-              </button>
+              </Link>
             </div>
           </div>
         </div>

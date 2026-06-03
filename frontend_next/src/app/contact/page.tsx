@@ -238,7 +238,7 @@ export default function ContactPage() {
 
         </section>
 
-        <section className="flex flex-col items-center">
+        <section id="laporan-darurat" className="flex flex-col items-center">
           <h2 className="text-black font-extrabold text-3xl md:text-[40px] mb-12 text-center">
             Laporan Kejadian Darurat
           </h2>
