@@ -130,7 +130,7 @@ export default function AdminArchive() {
               placeholder="Cari event..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="font-['Inter',sans-serif] w-full bg-[#F0F2F5] dark:bg-[#112240] border border-[#E2E8F0] dark:border-[#233554] rounded-[8px] py-[8px] pl-[36px] pr-[16px] text-[14px] text-gray-900 dark:text-white outline-none focus:border-[#031F41] dark:focus:border-blue-500 transition-colors"
+              className="font-['Inter',sans-serif] w-full bg-[#F0F2F5] dark:bg-[#112240] border border-[#E2E8F0] dark:border-[#233554] rounded-[8px] py-[8px] pl-[44px] pr-[16px] text-[14px] text-gray-900 dark:text-white outline-none focus:border-[#031F41] dark:focus:border-blue-500 transition-colors"
             />
           </div>
 
