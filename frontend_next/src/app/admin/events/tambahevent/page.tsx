@@ -110,15 +110,12 @@ export default function TambahEventPage() {
         </Link>
       </div>
 
-      <div className="bg-white dark:bg-[#112240] rounded-[30px] border border-[#E2E8F0] dark:border-[#233554] p-[23px_26px_47px] shadow-sm flex flex-col gap-[20px] max-w-[1056px]">
-
-        <div className="flex flex-col gap-[7px]">
-          <h2 className="text-[#1D3557] dark:text-white font-bold text-[14px]">Detail Event</h2>
-          <div className="h-px bg-[#E2E8F0] dark:bg-[#233554] w-full"></div>
-        </div>
-
-        <form className="flex flex-col gap-[24px] mt-[10px]" onSubmit={handleSubmit}>
-
+      <form className="flex flex-col gap-[24px] max-w-[1056px] w-full" onSubmit={handleSubmit}>
+        
+        {/* Informasi Utama */}
+        <div className="bg-white dark:bg-[#112240] rounded-[24px] border border-[#E2E8F0] dark:border-[#233554] p-[24px_32px] shadow-sm flex flex-col gap-[24px]">
+          <h2 className="text-[#1D3557] dark:text-white font-bold text-[15px] border-b border-[#E2E8F0] dark:border-[#233554] pb-[16px]">Informasi Utama</h2>
+          
           <div className="flex flex-col gap-[7px]">
             <label className="text-[#4A5568] dark:text-[#a8b2d1] font-bold text-[11px] uppercase tracking-wide">
               Nama Event *
@@ -193,6 +190,11 @@ export default function TambahEventPage() {
               className="bg-[#F8FAFC] dark:bg-[#0a192f] border-[1.4px] border-[#E2E8F0] dark:border-[#233554] rounded-[12px] px-[16px] h-[46px] text-[#4A5568] dark:text-[#ccd6f6] text-[13px] focus:outline-none focus:border-blue-500"
             />
           </div>
+        </div>
+
+        {/* Pendaftaran */}
+        <div className="bg-white dark:bg-[#112240] rounded-[24px] border border-[#E2E8F0] dark:border-[#233554] p-[24px_32px] shadow-sm flex flex-col gap-[24px]">
+          <h2 className="text-[#1D3557] dark:text-white font-bold text-[15px] border-b border-[#E2E8F0] dark:border-[#233554] pb-[16px]">Pendaftaran</h2>
 
           <div className="flex flex-col md:flex-row gap-[26px]">
             <div className="flex flex-col gap-[7px] flex-1">
@@ -210,7 +212,7 @@ export default function TambahEventPage() {
             </div>
             <div className="flex flex-col gap-[7px] flex-1">
               <label className="text-[#4A5568] dark:text-[#a8b2d1] font-bold text-[11px] uppercase tracking-wide">
-                Pendaftaran Sampai Tanggal *
+                Closed Registration *
               </label>
               <input
                 type="date"
@@ -229,6 +231,11 @@ export default function TambahEventPage() {
               />
             </div>
           </div>
+        </div>
+
+        {/* Deskripsi */}
+        <div className="bg-white dark:bg-[#112240] rounded-[24px] border border-[#E2E8F0] dark:border-[#233554] p-[24px_32px] shadow-sm flex flex-col gap-[24px]">
+          <h2 className="text-[#1D3557] dark:text-white font-bold text-[15px] border-b border-[#E2E8F0] dark:border-[#233554] pb-[16px]">Deskripsi Event</h2>
 
           <div className="flex flex-col gap-[7px]">
             <label className="text-[#4A5568] dark:text-[#a8b2d1] font-bold text-[11px] uppercase tracking-wide">
@@ -242,6 +249,11 @@ export default function TambahEventPage() {
               className="bg-[#F8FAFC] dark:bg-[#0a192f] border-[1.4px] border-[#E2E8F0] dark:border-[#233554] rounded-[12px] px-[16px] py-[12px] text-[#4A5568] dark:text-[#ccd6f6] text-[13px] focus:outline-none focus:border-blue-500 resize-none"
             />
           </div>
+        </div>
+
+        {/* Upload Foto */}
+        <div className="bg-white dark:bg-[#112240] rounded-[24px] border border-[#E2E8F0] dark:border-[#233554] p-[24px_32px] shadow-sm flex flex-col gap-[24px]">
+          <h2 className="text-[#1D3557] dark:text-white font-bold text-[15px] border-b border-[#E2E8F0] dark:border-[#233554] pb-[16px]">Dokumentasi</h2>
 
           <div className="flex flex-col gap-[7px]">
             <label className="text-[#4A5568] dark:text-[#a8b2d1] font-bold text-[11px] uppercase tracking-wide">
@@ -303,8 +315,9 @@ export default function TambahEventPage() {
               </p>
             )}
           </div>
+        </div>
 
-          <div className="flex flex-col sm:flex-row gap-[15px] mt-[8px]">
+        <div className="flex flex-col sm:flex-row gap-[15px] justify-end mt-[8px]">
             <button
               type="submit"
               disabled={isSubmitting}
@@ -324,11 +337,9 @@ export default function TambahEventPage() {
             >
               Batal
             </Link>
-          </div>
+        </div>
 
-        </form>
-      </div>
-
+      </form>
     </div>
   );
 }
