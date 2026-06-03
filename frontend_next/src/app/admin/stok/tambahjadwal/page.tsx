@@ -47,6 +47,7 @@ export default function TambahJadwalPage() {
     if (error || errorStok) {
       alert(`Gagal menambahkan jadwal: ${error?.message || errorStok?.message}`);
     } else {
+      window.dispatchEvent(new CustomEvent('app-notify', { detail: `telah menambahkan Jadwal Distribusi Buah & Susu baru untuk tanggal ${tanggal}.` }));
       alert("Jadwal dan Stok berhasil ditambahkan!");
       router.push('/admin/stok');
     }

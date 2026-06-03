@@ -17,6 +17,7 @@ function EditJadwalContent() {
   const [stokSisa, setStokSisa] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [originalTanggal, setOriginalTanggal] = useState('');
 
   useEffect(() => {
     if (id) {
@@ -24,6 +25,7 @@ function EditJadwalContent() {
         const { data, error } = await supabase.from('jadwal_distribusi').select('*').eq('id', id).single();
         if (data && !error) {
           setTanggal(data.tanggal_distribusi || '');
+          setOriginalTanggal(data.tanggal_distribusi || '');
           setWaktu(data.waktu ? data.waktu.substring(0, 5) : '');
           setLokasi(data.lokasi || '');
           setStokTotal(data.stok_paket_total?.toString() || '');
@@ -66,6 +68,14 @@ function EditJadwalContent() {
     } else if (!data || data.length === 0) {
       alert("Gagal mengedit: Kemungkinan akses ditolak oleh aturan database (RLS) atau data tidak ditemukan.");
     } else {
+      let notifMsg = `telah memperbarui Jadwal Distribusi Buah & Susu`;
+      if (tanggal !== originalTanggal) {
+        notifMsg += ` (tanggal diubah dari ${originalTanggal} menjadi ${tanggal})`;
+      } else {
+        notifMsg += ` pada tanggal ${tanggal}`;
+      }
+      window.dispatchEvent(new CustomEvent('app-notify', { detail: notifMsg }));
+
       alert("Jadwal berhasil diperbarui!");
       router.push('/admin/stok');
       router.refresh();
