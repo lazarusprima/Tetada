@@ -100,30 +100,34 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) throw new Error('Not logged in');
 
-      const formData = new FormData();
-      formData.append('userId', session.user.id);
-      formData.append('email', session.user.email || '');
-      formData.append('nama', editAdminName);
-      if (previewAvatar) {
-        formData.append('currentAvatarUrl', previewAvatar);
-      }
+      let finalAvatar = previewAvatar;
+      
       if (editUserAvatar) {
-        formData.append('avatarFile', editUserAvatar);
+        const fileExt = editUserAvatar.name.split('.').pop();
+        const fileName = `${session.user.id}-${Date.now()}.${fileExt}`;
+        const { error: uploadError, data: uploadData } = await supabase.storage
+          .from('pfp')
+          .upload(`avatars/${fileName}`, editUserAvatar, { upsert: true });
+          
+        if (uploadError) throw uploadError;
+        
+        const { data: publicUrlData } = supabase.storage
+          .from('pfp')
+          .getPublicUrl(uploadData.path);
+        finalAvatar = publicUrlData.publicUrl;
       }
 
-      const response = await fetch('/api/update-profile', {
-        method: 'POST',
-        body: formData,
-      });
+      const { error } = await supabase.from('profil_admin').upsert({
+        id: session.user.id,
+        email: session.user.email,
+        nama: editAdminName,
+        avatar_url: finalAvatar
+      }, { onConflict: 'id' });
 
-      const data = await response.json();
+      if (error) throw error;
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Terjadi kesalahan saat menyimpan profil');
-      }
-
-      setAdminName(data.nama);
-      setUserAvatar(data.avatar_url);
+      setAdminName(editAdminName);
+      setUserAvatar(finalAvatar);
       setIsAccountModalOpen(false);
       addManualNotification("Anda telah berhasil memperbarui profil akun.");
 
